@@ -1,0 +1,276 @@
+// 时间轴组件全局样式变量
+:root {
+  // 主色调
+  --timeline-primary-color: #1890ff;
+  --timeline-background-color: #f5f5f5;
+  --timeline-border-color: #d9d9d9;
+  --timeline-text-color: #333;
+  
+  // 时间状态颜色
+  --timeline-today-color: #52c41a;
+  --timeline-past-color: #8c8c8c;
+  --timeline-future-color: #1890ff;
+  
+  // 尺寸
+  --timeline-height: 48px;
+  --timeline-thumb-size: 16px;
+  --timeline-mark-height: 12px;
+  --timeline-major-mark-height: 16px;
+  
+  // 间距
+  --timeline-padding: 8px;
+  --timeline-margin: 4px;
+  
+  // 阴影
+  --timeline-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --timeline-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.2);
+  
+  // 过渡动画
+  --timeline-transition: all 0.3s ease;
+  --timeline-transition-fast: all 0.2s ease;
+}
+
+// 深色主题支持
+[data-theme="dark"] {
+  --timeline-primary-color: #177ddc;
+  --timeline-background-color: #1f1f1f;
+  --timeline-border-color: #434343;
+  --timeline-text-color: #fff;
+  
+  --timeline-today-color: #49aa19;
+  --timeline-past-color: #595959;
+  --timeline-future-color: #177ddc;
+}
+
+// 时间轴组件基础样式
+.timeline-container,
+.timeline-data,
+.timeline-picker,
+.timeline-scale {
+  box-sizing: border-box;
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}
+
+// 通用工具类
+.timeline-no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.timeline-grabbing {
+  cursor: grabbing !important;
+  
+  * {
+    cursor: grabbing !important;
+  }
+}
+
+.timeline-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+// 动画类
+.timeline-fade-enter-active,
+.timeline-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.timeline-fade-enter-from,
+.timeline-fade-leave-to {
+  opacity: 0;
+}
+
+.timeline-slide-enter-active,
+.timeline-slide-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.timeline-slide-enter-from,
+.timeline-slide-leave-to {
+  transform: translateY(-10px);
+}
+
+// 响应式断点
+@mixin timeline-mobile {
+  @media (max-width: 768px) {
+    @content;
+  }
+}
+
+@mixin timeline-tablet {
+  @media (min-width: 769px) and (max-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin timeline-desktop {
+  @media (min-width: 1025px) {
+    @content;
+  }
+}
+
+// 时间轴容器布局
+.timeline-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--timeline-margin);
+  
+  &--horizontal {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  &--vertical {
+    flex-direction: column;
+  }
+}
+
+// 时间轴数据区域
+.timeline-data-section {
+  display: flex;
+  align-items: center;
+  gap: var(--timeline-margin);
+  padding: var(--timeline-padding);
+  
+  @include timeline-mobile {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+// 时间轴刻度区域
+.timeline-scale-section {
+  flex: 1;
+  min-width: 0;
+  
+  @include timeline-mobile {
+    min-height: 40px;
+  }
+}
+
+// 自定义滚动条样式
+.timeline-scrollable {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: var(--timeline-background-color);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--timeline-border-color);
+    border-radius: 3px;
+    
+    &:hover {
+      background: var(--timeline-primary-color);
+    }
+  }
+}
+
+// 无障碍访问支持
+.timeline-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// 焦点样式
+.timeline-focusable {
+  &:focus {
+    outline: 2px solid var(--timeline-primary-color);
+    outline-offset: 2px;
+  }
+  
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+// 加载状态
+.timeline-loading {
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--timeline-border-color);
+    border-top-color: var(--timeline-primary-color);
+    border-radius: 50%;
+    animation: timeline-spin 1s linear infinite;
+  }
+}
+
+@keyframes timeline-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 错误状态
+.timeline-error {
+  color: #ff4d4f;
+  border-color: #ff4d4f;
+  
+  &:hover {
+    border-color: #ff7875;
+  }
+}
+
+// 成功状态
+.timeline-success {
+  color: #52c41a;
+  border-color: #52c41a;
+  
+  &:hover {
+    border-color: #73d13d;
+  }
+}
+
+// 警告状态
+.timeline-warning {
+  color: #faad14;
+  border-color: #faad14;
+  
+  &:hover {
+    border-color: #ffc53d;
+  }
+}
+
+// 打印样式
+@media print {
+  .timeline-container {
+    break-inside: avoid;
+  }
+  
+  .timeline-scale__thumb,
+  .timeline-scale__range-handle {
+    display: none;
+  }
+  
+  .timeline-picker {
+    display: none;
+  }
+}

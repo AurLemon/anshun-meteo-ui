@@ -5,11 +5,23 @@ import type { App, Component } from 'vue'
 // import TemperatureDisplay from './components/TemperatureDisplay.vue'
 // import WindIndicator from './components/WindIndicator.vue'
 
+// 导入时间轴组件
+import {
+  TimelineContainer,
+  TimelineData,
+  TimelinePicker,
+  TimelineScale
+} from './components/timeline'
+
 // 组件列表
 const components: Component[] = [
   // WeatherCard,
   // TemperatureDisplay,
   // WindIndicator,
+  TimelineContainer,
+  TimelineData,
+  TimelinePicker,
+  TimelineScale
 ]
 
 // 定义 install 方法
@@ -29,5 +41,15 @@ export default {
 // 单独导出组件
 // export { WeatherCard, TemperatureDisplay, WindIndicator }
 
-// 导出类型
-export * from './types'
+// 导出时间轴组件
+export {
+  TimelineContainer,
+  TimelineData,
+  TimelinePicker,
+  TimelineScale
+}
+
+// 导出时间轴相关类型和工具
+export * from './components/timeline'
+export * from './types/timeline'
+export { TimeUtils } from './utils/time'
