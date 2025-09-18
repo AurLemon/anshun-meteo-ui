@@ -1,0 +1,182 @@
+:root {
+  /* 颜色变量 */
+  --meteo-primary: #74b9ff;
+  --meteo-primary-dark: #0984e3;
+  --meteo-secondary: #fd79a8;
+  --meteo-success: #00b894;
+  --meteo-warning: #fdcb6e;
+  --meteo-error: #e17055;
+  --meteo-info: #6c5ce7;
+
+  /* 中性色 */
+  --meteo-white: #ffffff;
+  --meteo-gray-50: #f8f9fa;
+  --meteo-gray-100: #e9ecef;
+  --meteo-gray-200: #dee2e6;
+  --meteo-gray-300: #ced4da;
+  --meteo-gray-400: #adb5bd;
+  --meteo-gray-500: #6c757d;
+  --meteo-gray-600: #495057;
+  --meteo-gray-700: #343a40;
+  --meteo-gray-800: #212529;
+  --meteo-gray-900: #000000;
+
+  /* 字体 */
+  --meteo-font-family:
+    'Inter', 'Helvetica Neue', 'Helvetica', 'Roboto', 'BlinkMacSystemFont',
+    'MiSans', 'HarmonyOS Sans SC', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  --meteo-font-size-xs: 0.75rem;
+  --meteo-font-size-sm: 0.875rem;
+  --meteo-font-size-base: 1rem;
+  --meteo-font-size-lg: 1.125rem;
+  --meteo-font-size-xl: 1.25rem;
+  --meteo-font-size-2xl: 1.5rem;
+  --meteo-font-size-3xl: 1.875rem;
+  --meteo-font-size-4xl: 2.25rem;
+
+  /* 间距 */
+  --meteo-spacing-xs: 0.25rem;
+  --meteo-spacing-sm: 0.5rem;
+  --meteo-spacing-md: 1rem;
+  --meteo-spacing-lg: 1.5rem;
+  --meteo-spacing-xl: 2rem;
+  --meteo-spacing-2xl: 3rem;
+
+  /* 圆角 */
+  --meteo-radius-sm: 0.25rem;
+  --meteo-radius-md: 0.5rem;
+  --meteo-radius-lg: 0.75rem;
+  --meteo-radius-xl: 1rem;
+
+  /* 阴影 */
+  --meteo-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --meteo-shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --meteo-shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --meteo-shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* 过渡 */
+  --meteo-transition-fast: 150ms ease-in-out;
+  --meteo-transition-base: 250ms ease-in-out;
+  --meteo-transition-slow: 350ms ease-in-out;
+}
+
+/* 基础重置 */
+.meteo-ui * {
+  box-sizing: border-box;
+}
+
+.meteo-ui {
+  font-family: var(--meteo-font-family);
+  font-size: var(--meteo-font-size-base);
+  line-height: 1.5;
+  color: var(--meteo-gray-800);
+}
+
+/* 工具类 */
+.meteo-text-xs {
+  font-size: var(--meteo-font-size-xs);
+}
+
+.meteo-text-sm {
+  font-size: var(--meteo-font-size-sm);
+}
+
+.meteo-text-base {
+  font-size: var(--meteo-font-size-base);
+}
+
+.meteo-text-lg {
+  font-size: var(--meteo-font-size-lg);
+}
+
+.meteo-text-xl {
+  font-size: var(--meteo-font-size-xl);
+}
+
+.meteo-text-2xl {
+  font-size: var(--meteo-font-size-2xl);
+}
+
+.meteo-text-3xl {
+  font-size: var(--meteo-font-size-3xl);
+}
+
+.meteo-text-4xl {
+  font-size: var(--meteo-font-size-4xl);
+}
+
+.meteo-p-xs {
+  padding: var(--meteo-spacing-xs);
+}
+
+.meteo-p-sm {
+  padding: var(--meteo-spacing-sm);
+}
+
+.meteo-p-md {
+  padding: var(--meteo-spacing-md);
+}
+
+.meteo-p-lg {
+  padding: var(--meteo-spacing-lg);
+}
+
+.meteo-p-xl {
+  padding: var(--meteo-spacing-xl);
+}
+
+.meteo-m-xs {
+  margin: var(--meteo-spacing-xs);
+}
+
+.meteo-m-sm {
+  margin: var(--meteo-spacing-sm);
+}
+
+.meteo-m-md {
+  margin: var(--meteo-spacing-md);
+}
+
+.meteo-m-lg {
+  margin: var(--meteo-spacing-lg);
+}
+
+.meteo-m-xl {
+  margin: var(--meteo-spacing-xl);
+}
+
+.meteo-rounded-sm {
+  border-radius: var(--meteo-radius-sm);
+}
+
+.meteo-rounded-md {
+  border-radius: var(--meteo-radius-md);
+}
+
+.meteo-rounded-lg {
+  border-radius: var(--meteo-radius-lg);
+}
+
+.meteo-rounded-xl {
+  border-radius: var(--meteo-radius-xl);
+}
+
+.meteo-shadow-sm {
+  box-shadow: var(--meteo-shadow-sm);
+}
+
+.meteo-shadow-md {
+  box-shadow: var(--meteo-shadow-md);
+}
+
+.meteo-shadow-lg {
+  box-shadow: var(--meteo-shadow-lg);
+}
+
+.meteo-shadow-xl {
+  box-shadow: var(--meteo-shadow-xl);
+}
