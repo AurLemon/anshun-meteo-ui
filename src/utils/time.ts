@@ -19,6 +19,12 @@ export class TimeUtils {
       return value
     }
 
+    // 检查是否为 TimeRange 对象（错误传入）
+    if (typeof value === 'object' && value !== null && 'start' in value && 'end' in value) {
+      console.warn('TimeRange object passed to toDayjs, using current time as fallback:', value)
+      return dayjs()
+    }
+
     // 检查是否为无效值（如 "M2" 等）
     if (value === null || value === undefined || value === '' ||
         (typeof value === 'string' && (value.trim() === '' || value === 'M2' || !/^[\d\-T:\s\.Z]+/.test(value)))) {
@@ -120,14 +126,14 @@ export class TimeUtils {
     const startTime = this.toDayjs(start)
     const endTime = this.toDayjs(end)
     const marks: TimeMark[] = []
-    
+
     const totalMinutes = endTime.diff(startTime, 'minute')
     let current = startTime
 
     while (current.isBefore(endTime) || current.isSame(endTime)) {
       const position = (current.diff(startTime, 'minute') / totalMinutes) * 100
       const dateType = this.getDateType(current)
-      
+
       marks.push({
         time: current,
         label: this.getTimeLabel(current, step),

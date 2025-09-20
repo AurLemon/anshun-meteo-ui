@@ -51,8 +51,10 @@
       </div>
 
       <!-- 时间指针 -->
+      <!-- 点模式：显示单个时间指针 -->
       <div
-        class="timeline-scale__thumb"
+        v-if="dataContext.isPointMode"
+        class="timeline-scale__thumb timeline-scale__thumb--point"
         :style="{ left: `${thumbPosition}%` }"
         @mousedown.stop="handleThumbMouseDown"
         @touchstart.stop.passive="handleThumbTouchStart"
@@ -63,9 +65,38 @@
         </div>
       </div>
 
+      <!-- 范围模式：显示开始和结束时间指针 -->
+      <template v-if="dataContext.isRangeMode">
+        <!-- 开始时间指针 -->
+        <div
+          class="timeline-scale__thumb timeline-scale__thumb--range-start"
+          :style="{ left: `${startThumbPosition}%` }"
+          @mousedown.stop="handleStartThumbMouseDown"
+          @touchstart.stop.passive="handleStartThumbTouchStart"
+        >
+          <div class="timeline-scale__thumb-handle timeline-scale__thumb-handle--start"></div>
+          <div class="timeline-scale__thumb-tooltip">
+            {{ startTimeLabel }}
+          </div>
+        </div>
+
+        <!-- 结束时间指针 -->
+        <div
+          class="timeline-scale__thumb timeline-scale__thumb--range-end"
+          :style="{ left: `${endThumbPosition}%` }"
+          @mousedown.stop="handleEndThumbMouseDown"
+          @touchstart.stop.passive="handleEndThumbTouchStart"
+        >
+          <div class="timeline-scale__thumb-handle timeline-scale__thumb-handle--end"></div>
+          <div class="timeline-scale__thumb-tooltip">
+            {{ endTimeLabel }}
+          </div>
+        </div>
+      </template>
+
       <!-- 范围选择（仅在范围模式下显示） -->
       <div
-        v-if="dataContext.isRangeMode.value"
+        v-if="dataContext.isRangeMode"
         class="timeline-scale__range"
         :style="rangeStyle"
       >
@@ -161,6 +192,8 @@ const trackRef = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
 const dragType = ref<'thumb' | 'range-start' | 'range-end'>('thumb')
 const currentDisplayRange = ref<{ start: Dayjs; end: Dayjs } | null>(null)
+const edgeScrollTimer = ref<number | null>(null)
+const lastMousePosition = ref<{ x: number; time: number } | null>(null)
 
 // 计算属性
 const isScaleMode = computed(() => {
@@ -216,6 +249,28 @@ const thumbPosition = computed(() => {
   )
 })
 
+const startThumbPosition = computed(() => {
+  if (dataContext.isPointMode) return 0
+
+  const range = dataContext.getCurrentTimeRange()
+  return TimeUtils.calculatePosition(
+    range.start,
+    displayRange.value.start,
+    displayRange.value.end,
+  )
+})
+
+const endThumbPosition = computed(() => {
+  if (dataContext.isPointMode) return 0
+
+  const range = dataContext.getCurrentTimeRange()
+  return TimeUtils.calculatePosition(
+    range.end,
+    displayRange.value.start,
+    displayRange.value.end,
+  )
+})
+
 const rangeStyle = computed(() => {
   if (dataContext.isPointMode.value) return {}
 
@@ -240,6 +295,20 @@ const rangeStyle = computed(() => {
 const currentTimeLabel = computed(() => {
   const currentValue = dataContext.getCurrentTimeValue()
   return TimeUtils.formatTime(currentValue, 'HH:mm')
+})
+
+const startTimeLabel = computed(() => {
+  if (dataContext.isPointMode.value) return ''
+
+  const range = dataContext.getCurrentTimeRange()
+  return TimeUtils.formatTime(range.start, 'HH:mm')
+})
+
+const endTimeLabel = computed(() => {
+  if (dataContext.isPointMode.value) return ''
+
+  const range = dataContext.getCurrentTimeRange()
+  return TimeUtils.formatTime(range.end, 'HH:mm')
 })
 
 // 方法
@@ -392,6 +461,78 @@ const handleThumbTouchStart = (event: TouchEvent) => {
   event.preventDefault()
 }
 
+const handleStartThumbMouseDown = (event: MouseEvent) => {
+  if (contextValue.value.disabled) return
+
+  // 开始拖拽时，固定当前显示范围
+  currentDisplayRange.value = {
+    start: displayRange.value.start,
+    end: displayRange.value.end,
+  }
+
+  isDragging.value = true
+  dragType.value = 'range-start'
+  if (contextValue.value.setDragging) {
+    contextValue.value.setDragging(true)
+  }
+
+  event.preventDefault()
+}
+
+const handleStartThumbTouchStart = (event: TouchEvent) => {
+  if (contextValue.value.disabled) return
+
+  // 开始拖拽时，固定当前显示范围
+  currentDisplayRange.value = {
+    start: displayRange.value.start,
+    end: displayRange.value.end,
+  }
+
+  isDragging.value = true
+  dragType.value = 'range-start'
+  if (contextValue.value.setDragging) {
+    contextValue.value.setDragging(true)
+  }
+
+  event.preventDefault()
+}
+
+const handleEndThumbMouseDown = (event: MouseEvent) => {
+  if (contextValue.value.disabled) return
+
+  // 开始拖拽时，固定当前显示范围
+  currentDisplayRange.value = {
+    start: displayRange.value.start,
+    end: displayRange.value.end,
+  }
+
+  isDragging.value = true
+  dragType.value = 'range-end'
+  if (contextValue.value.setDragging) {
+    contextValue.value.setDragging(true)
+  }
+
+  event.preventDefault()
+}
+
+const handleEndThumbTouchStart = (event: TouchEvent) => {
+  if (contextValue.value.disabled) return
+
+  // 开始拖拽时，固定当前显示范围
+  currentDisplayRange.value = {
+    start: displayRange.value.start,
+    end: displayRange.value.end,
+  }
+
+  isDragging.value = true
+  dragType.value = 'range-end'
+  if (contextValue.value.setDragging) {
+    contextValue.value.setDragging(true)
+  }
+
+  event.preventDefault()
+}
+
 const handleRangeStartMouseDown = (event: MouseEvent) => {
   if (contextValue.value.disabled) return
 
@@ -508,20 +649,82 @@ const checkEdgeScroll = (event: MouseEvent | TouchEvent) => {
   const percentage = ((clientX - rect.left) / rect.width) * 100
   const edgeThreshold = 15 // 边缘阈值 15%
 
-  if (percentage < edgeThreshold) {
-    // 左边缘，向前滚动（显示更早的时间）
-    const scrollAmount = 1 // 每次滚动1小时，更平滑
-    currentDisplayRange.value = {
-      start: currentDisplayRange.value.start.subtract(scrollAmount, 'hour'),
-      end: currentDisplayRange.value.end.subtract(scrollAmount, 'hour'),
+  // 记录鼠标位置和时间，用于计算移动速度
+  const currentTime = Date.now()
+  if (lastMousePosition.value) {
+    const timeDiff = currentTime - lastMousePosition.value.time
+    const positionDiff = Math.abs(clientX - lastMousePosition.value.x)
+    const speed = timeDiff > 0 ? positionDiff / timeDiff : 0 // 像素/毫秒
+
+    // 基于速度调整滚动量（速度越快，滚动越快）
+    const baseScrollAmount = 0.5 // 基础滚动量（小时）
+    const speedMultiplier = Math.min(Math.max(speed * 100, 0.5), 3) // 限制在0.5-3倍之间
+    const scrollAmount = baseScrollAmount * speedMultiplier
+
+    if (percentage < edgeThreshold) {
+      // 左边缘，向前滚动（显示更早的时间）
+      const intensity = (edgeThreshold - percentage) / edgeThreshold // 距离边缘越近，强度越大
+      const finalScrollAmount = scrollAmount * intensity
+
+      currentDisplayRange.value = {
+        start: currentDisplayRange.value.start.subtract(finalScrollAmount, 'hour'),
+        end: currentDisplayRange.value.end.subtract(finalScrollAmount, 'hour'),
+      }
+
+      // 启动持续滚动
+      startContinuousScroll('left', finalScrollAmount)
+    } else if (percentage > 100 - edgeThreshold) {
+      // 右边缘，向后滚动（显示更晚的时间）
+      const intensity = (percentage - (100 - edgeThreshold)) / edgeThreshold
+      const finalScrollAmount = scrollAmount * intensity
+
+      currentDisplayRange.value = {
+        start: currentDisplayRange.value.start.add(finalScrollAmount, 'hour'),
+        end: currentDisplayRange.value.end.add(finalScrollAmount, 'hour'),
+      }
+
+      // 启动持续滚动
+      startContinuousScroll('right', finalScrollAmount)
+    } else {
+      // 不在边缘区域，停止持续滚动
+      stopContinuousScroll()
     }
-  } else if (percentage > 100 - edgeThreshold) {
-    // 右边缘，向后滚动（显示更晚的时间）
-    const scrollAmount = 1 // 每次滚动1小时，更平滑
-    currentDisplayRange.value = {
-      start: currentDisplayRange.value.start.add(scrollAmount, 'hour'),
-      end: currentDisplayRange.value.end.add(scrollAmount, 'hour'),
+  }
+
+  // 更新鼠标位置记录
+  lastMousePosition.value = { x: clientX, time: currentTime }
+}
+
+// 启动持续滚动
+const startContinuousScroll = (direction: 'left' | 'right', scrollAmount: number) => {
+  // 清除之前的定时器
+  stopContinuousScroll()
+
+  // 启动新的定时器，每100ms滚动一次
+  edgeScrollTimer.value = window.setInterval(() => {
+    if (!currentDisplayRange.value) return
+
+    const amount = scrollAmount * 0.3 // 持续滚动时使用较小的滚动量
+
+    if (direction === 'left') {
+      currentDisplayRange.value = {
+        start: currentDisplayRange.value.start.subtract(amount, 'hour'),
+        end: currentDisplayRange.value.end.subtract(amount, 'hour'),
+      }
+    } else {
+      currentDisplayRange.value = {
+        start: currentDisplayRange.value.start.add(amount, 'hour'),
+        end: currentDisplayRange.value.end.add(amount, 'hour'),
+      }
     }
+  }, 100)
+}
+
+// 停止持续滚动
+const stopContinuousScroll = () => {
+  if (edgeScrollTimer.value) {
+    clearInterval(edgeScrollTimer.value)
+    edgeScrollTimer.value = null
   }
 }
 
@@ -578,6 +781,27 @@ const handleGlobalMouseUp = () => {
       contextValue.value.setDragging(false)
     }
 
+    // 停止持续滚动
+    stopContinuousScroll()
+
+    // 清除鼠标位置记录
+    lastMousePosition.value = null
+
+    // 在范围模式下，检查并修正时间顺序
+    if (dataContext.isRangeMode.value) {
+      const currentRange = dataContext.getCurrentTimeRange()
+      const startTime = TimeUtils.toDayjs(currentRange.start)
+      const endTime = TimeUtils.toDayjs(currentRange.end)
+
+      // 如果结束时间在开始时间之前，交换它们
+      if (endTime.isBefore(startTime)) {
+        dataContext.setTimeRange({
+          start: endTime,
+          end: startTime,
+        })
+      }
+    }
+
     // 拖拽结束后，清除固定的显示范围，让时间轴重新自动调整
     // 延迟一点时间，确保最后的时间更新已经完成
     setTimeout(() => {
@@ -604,6 +828,9 @@ onUnmounted(() => {
   document.removeEventListener('mouseup', handleGlobalMouseUp)
   document.removeEventListener('touchmove', handleGlobalMouseMove)
   document.removeEventListener('touchend', handleGlobalMouseUp)
+
+  // 清理定时器
+  stopContinuousScroll()
 })
 
 // 暴露方法
@@ -684,6 +911,7 @@ defineExpose({
     position: absolute;
     top: 0;
     transform: translateX(-50%);
+    z-index: 1;
 
     &-line {
       width: 1px;
@@ -780,6 +1008,59 @@ defineExpose({
 
     &:active {
       cursor: grabbing;
+    }
+
+    // 点模式指针样式
+    &--point {
+      .timeline-scale__thumb-handle {
+        background: var(--timeline-primary-color, #1890ff);
+      }
+
+      .timeline-scale__thumb-tooltip {
+        background: var(--timeline-primary-color, #1890ff);
+
+        &::after {
+          border-top-color: var(--timeline-primary-color, #1890ff);
+        }
+      }
+    }
+
+    // 范围开始指针样式
+    &--range-start {
+      .timeline-scale__thumb-handle {
+        background: var(--timeline-success-color, #52c41a);
+
+        &--start {
+          background: var(--timeline-success-color, #52c41a);
+        }
+      }
+
+      .timeline-scale__thumb-tooltip {
+        background: var(--timeline-success-color, #52c41a);
+
+        &::after {
+          border-top-color: var(--timeline-success-color, #52c41a);
+        }
+      }
+    }
+
+    // 范围结束指针样式
+    &--range-end {
+      .timeline-scale__thumb-handle {
+        background: var(--timeline-warning-color, #fa8c16);
+
+        &--end {
+          background: var(--timeline-warning-color, #fa8c16);
+        }
+      }
+
+      .timeline-scale__thumb-tooltip {
+        background: var(--timeline-warning-color, #fa8c16);
+
+        &::after {
+          border-top-color: var(--timeline-warning-color, #fa8c16);
+        }
+      }
     }
 
     &-handle {
