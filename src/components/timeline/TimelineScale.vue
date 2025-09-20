@@ -5,6 +5,7 @@
       'timeline-scale--scale': isScaleMode,
       'timeline-scale--button': isButtonMode,
       'timeline-scale--disabled': contextValue.disabled,
+      'timeline-scale--dragging': isDragging,
     }"
   >
     <!-- 刻度模式 -->
@@ -159,6 +160,7 @@ const trackRef = ref<HTMLElement | null>(null)
 // 内部状态
 const isDragging = ref(false)
 const dragType = ref<'thumb' | 'range-start' | 'range-end'>('thumb')
+const currentDisplayRange = ref<{ start: Dayjs; end: Dayjs } | null>(null)
 
 // 计算属性
 const isScaleMode = computed(() => {
@@ -174,6 +176,12 @@ const isScaleMode = computed(() => {
 const isButtonMode = computed(() => !isScaleMode.value)
 
 const displayRange = computed(() => {
+  // 如果有自定义显示范围（拖拽时），使用它
+  if (currentDisplayRange.value) {
+    return currentDisplayRange.value
+  }
+
+  // 否则基于当前时间计算
   try {
     const currentValue = dataContext.getCurrentTimeValue()
     return TimeUtils.getDisplayRange(currentValue, 24)
@@ -270,8 +278,27 @@ const calculateTimeFromEvent = (event: MouseEvent | TouchEvent): Dayjs => {
   if (!trackRef.value) return TimeUtils.now()
 
   const rect = trackRef.value.getBoundingClientRect()
-  const clientX =
-    'touches' in event ? event.touches[0]?.clientX || 0 : event.clientX
+  let clientX = 0
+
+  // 安全地检查事件类型
+  if (
+    event instanceof TouchEvent &&
+    event.touches &&
+    event.touches.length > 0
+  ) {
+    clientX = event.touches[0]?.clientX || 0
+  } else if (event instanceof MouseEvent) {
+    clientX = event.clientX
+  } else {
+    // 兼容性处理：检查是否有 touches 属性
+    const touchEvent = event as any
+    if (touchEvent.touches && touchEvent.touches.length > 0) {
+      clientX = touchEvent.touches[0]?.clientX || 0
+    } else {
+      clientX = (event as any).clientX || 0
+    }
+  }
+
   const percentage = Math.max(
     0,
     Math.min(100, ((clientX - rect.left) / rect.width) * 100),
@@ -332,6 +359,12 @@ const handleTouchStart = (event: TouchEvent) => {
 const handleThumbMouseDown = (event: MouseEvent) => {
   if (contextValue.value.disabled) return
 
+  // 开始拖拽时，固定当前显示范围
+  currentDisplayRange.value = {
+    start: displayRange.value.start,
+    end: displayRange.value.end,
+  }
+
   isDragging.value = true
   dragType.value = 'thumb'
   if (contextValue.value.setDragging) {
@@ -343,6 +376,12 @@ const handleThumbMouseDown = (event: MouseEvent) => {
 
 const handleThumbTouchStart = (event: TouchEvent) => {
   if (contextValue.value.disabled) return
+
+  // 开始拖拽时，固定当前显示范围
+  currentDisplayRange.value = {
+    start: displayRange.value.start,
+    end: displayRange.value.end,
+  }
 
   isDragging.value = true
   dragType.value = 'thumb'
@@ -356,6 +395,12 @@ const handleThumbTouchStart = (event: TouchEvent) => {
 const handleRangeStartMouseDown = (event: MouseEvent) => {
   if (contextValue.value.disabled) return
 
+  // 开始拖拽时，固定当前显示范围
+  currentDisplayRange.value = {
+    start: displayRange.value.start,
+    end: displayRange.value.end,
+  }
+
   isDragging.value = true
   dragType.value = 'range-start'
   if (contextValue.value.setDragging) {
@@ -367,6 +412,12 @@ const handleRangeStartMouseDown = (event: MouseEvent) => {
 
 const handleRangeStartTouchStart = (event: TouchEvent) => {
   if (contextValue.value.disabled) return
+
+  // 开始拖拽时，固定当前显示范围
+  currentDisplayRange.value = {
+    start: displayRange.value.start,
+    end: displayRange.value.end,
+  }
 
   isDragging.value = true
   dragType.value = 'range-start'
@@ -380,6 +431,12 @@ const handleRangeStartTouchStart = (event: TouchEvent) => {
 const handleRangeEndMouseDown = (event: MouseEvent) => {
   if (contextValue.value.disabled) return
 
+  // 开始拖拽时，固定当前显示范围
+  currentDisplayRange.value = {
+    start: displayRange.value.start,
+    end: displayRange.value.end,
+  }
+
   isDragging.value = true
   dragType.value = 'range-end'
   if (contextValue.value.setDragging) {
@@ -391,6 +448,12 @@ const handleRangeEndMouseDown = (event: MouseEvent) => {
 
 const handleRangeEndTouchStart = (event: TouchEvent) => {
   if (contextValue.value.disabled) return
+
+  // 开始拖拽时，固定当前显示范围
+  currentDisplayRange.value = {
+    start: displayRange.value.start,
+    end: displayRange.value.end,
+  }
 
   isDragging.value = true
   dragType.value = 'range-end'
@@ -418,18 +481,68 @@ const handleButtonClick = (time: Dayjs) => {
   }
 }
 
+// 边缘检测和自动滚动
+const checkEdgeScroll = (event: MouseEvent | TouchEvent) => {
+  if (!trackRef.value || !currentDisplayRange.value) return
+
+  const rect = trackRef.value.getBoundingClientRect()
+  let clientX = 0
+
+  if (
+    event instanceof TouchEvent &&
+    event.touches &&
+    event.touches.length > 0
+  ) {
+    clientX = event.touches[0]?.clientX || 0
+  } else if (event instanceof MouseEvent) {
+    clientX = event.clientX
+  } else {
+    const touchEvent = event as any
+    if (touchEvent.touches && touchEvent.touches.length > 0) {
+      clientX = touchEvent.touches[0]?.clientX || 0
+    } else {
+      clientX = (event as any).clientX || 0
+    }
+  }
+
+  const percentage = ((clientX - rect.left) / rect.width) * 100
+  const edgeThreshold = 15 // 边缘阈值 15%
+
+  if (percentage < edgeThreshold) {
+    // 左边缘，向前滚动（显示更早的时间）
+    const scrollAmount = 1 // 每次滚动1小时，更平滑
+    currentDisplayRange.value = {
+      start: currentDisplayRange.value.start.subtract(scrollAmount, 'hour'),
+      end: currentDisplayRange.value.end.subtract(scrollAmount, 'hour'),
+    }
+  } else if (percentage > 100 - edgeThreshold) {
+    // 右边缘，向后滚动（显示更晚的时间）
+    const scrollAmount = 1 // 每次滚动1小时，更平滑
+    currentDisplayRange.value = {
+      start: currentDisplayRange.value.start.add(scrollAmount, 'hour'),
+      end: currentDisplayRange.value.end.add(scrollAmount, 'hour'),
+    }
+  }
+}
+
 // 全局事件处理
 const handleGlobalMouseMove = (event: MouseEvent | TouchEvent) => {
   if (!isDragging.value || contextValue.value.disabled) return
+
+  event.preventDefault()
+
+  // 检查边缘滚动
+  checkEdgeScroll(event)
 
   const time = calculateTimeFromEvent(event)
   const alignedTime = TimeUtils.alignToStep(time, props.step)
 
   if (dragType.value === 'thumb') {
+    // 时间指针拖拽：直接设置时间，不管是点模式还是范围模式
     if (dataContext.isPointMode.value) {
       dataContext.setTimeValue(alignedTime)
     } else {
-      // 在范围模式下，拖拽整个范围
+      // 在范围模式下，拖拽时间指针应该移动整个范围，保持范围长度不变
       const currentRange = dataContext.getCurrentTimeRange()
       const duration = TimeUtils.toDayjs(currentRange.end).diff(
         TimeUtils.toDayjs(currentRange.start),
@@ -464,14 +577,25 @@ const handleGlobalMouseUp = () => {
     if (contextValue.value.setDragging) {
       contextValue.value.setDragging(false)
     }
+
+    // 拖拽结束后，清除固定的显示范围，让时间轴重新自动调整
+    // 延迟一点时间，确保最后的时间更新已经完成
+    setTimeout(() => {
+      currentDisplayRange.value = null
+    }, 100)
   }
 }
 
 // 生命周期
 onMounted(() => {
-  document.addEventListener('mousemove', handleGlobalMouseMove)
+  // 使用 passive: false 确保可以调用 preventDefault
+  document.addEventListener('mousemove', handleGlobalMouseMove, {
+    passive: false,
+  })
   document.addEventListener('mouseup', handleGlobalMouseUp)
-  document.addEventListener('touchmove', handleGlobalMouseMove)
+  document.addEventListener('touchmove', handleGlobalMouseMove, {
+    passive: false,
+  })
   document.addEventListener('touchend', handleGlobalMouseUp)
 })
 
@@ -506,6 +630,22 @@ defineExpose({
   &--disabled {
     opacity: 0.6;
     pointer-events: none;
+  }
+
+  &--dragging {
+    user-select: none;
+
+    .timeline-scale__track {
+      cursor: grabbing;
+    }
+
+    .timeline-scale__thumb {
+      cursor: grabbing;
+    }
+
+    .timeline-scale__range-handle {
+      cursor: grabbing;
+    }
   }
 
   // 刻度模式样式
@@ -643,16 +783,17 @@ defineExpose({
     }
 
     &-handle {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       background: var(--timeline-primary-color, #1890ff);
-      border: 2px solid white;
+      border: 3px solid white;
       border-radius: 50%;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      transition: transform 0.2s;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
 
       &:hover {
-        transform: scale(1.2);
+        transform: scale(1.3);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
       }
     }
 
@@ -684,38 +825,43 @@ defineExpose({
   // 范围选择
   &__range {
     position: absolute;
-    top: 8px;
-    height: 32px;
+    top: 6px;
+    height: 36px;
     z-index: 2;
 
     &-fill {
       width: 100%;
       height: 100%;
       background: var(--timeline-primary-color, #1890ff);
-      opacity: 0.2;
-      border-radius: 4px;
+      opacity: 0.3;
+      border-radius: 6px;
+      border: 1px solid var(--timeline-primary-color, #1890ff);
     }
 
     &-handle {
       position: absolute;
-      top: -4px;
-      width: 12px;
-      height: 40px;
+      top: -6px;
+      width: 14px;
+      height: 48px;
       background: var(--timeline-primary-color, #1890ff);
-      border-radius: 2px;
+      border-radius: 3px;
       cursor: ew-resize;
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s ease;
 
       &--start {
-        left: -6px;
+        left: -7px;
       }
 
       &--end {
-        right: -6px;
+        right: -7px;
       }
 
       &:hover {
         background: var(--timeline-primary-color, #1890ff);
-        opacity: 0.8;
+        transform: scaleX(1.2);
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
       }
     }
   }
