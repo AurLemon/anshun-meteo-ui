@@ -96,6 +96,13 @@ export default [
         __filename: 'readonly',
         Buffer: 'readonly',
         global: 'readonly',
+        console: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
+        HTMLElement: 'readonly',
+        MouseEvent: 'readonly',
+        TouchEvent: 'readonly',
+        Event: 'readonly',
       },
     },
     rules: {

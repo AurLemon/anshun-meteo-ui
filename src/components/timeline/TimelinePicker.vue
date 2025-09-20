@@ -1,7 +1,7 @@
 <template>
   <div class="timeline-picker">
     <!-- 时间点模式 -->
-    <a-date-picker
+    <ADatePicker
       v-if="dataContext.isPointMode.value"
       :value="pointValue"
       :format="format"
@@ -14,9 +14,9 @@
       @focus="handleFocus"
       @blur="handleBlur"
     />
-    
+
     <!-- 时间段模式 -->
-    <a-range-picker
+    <ARangePicker
       v-else
       :value="rangeValue"
       :format="format"
@@ -36,10 +36,7 @@
 import { inject, computed, ref } from 'vue'
 import { DatePicker as ADatePicker } from 'ant-design-vue'
 import { TimeUtils } from '../../utils/time'
-import type {
-  TimelinePickerProps,
-  TimelineContext
-} from '../../types/timeline'
+import type { TimelinePickerProps, TimelineContext, TimeValue, TimeRange } from '../../types/timeline'
 import type { ComputedRef } from 'vue'
 import type { Dayjs } from 'dayjs'
 
@@ -48,7 +45,7 @@ const ARangePicker = ADatePicker.RangePicker
 
 // 定义组件名称
 defineOptions({
-  name: 'TimelinePicker'
+  name: 'TimelinePicker',
 })
 
 // 定义 Props
@@ -57,17 +54,30 @@ const props = withDefaults(defineProps<TimelinePickerProps>(), {
   placeholder: '',
   disabled: false,
   showTime: true,
-  allowClear: true
+  allowClear: true,
 })
 
 // 注入上下文
-const timelineContext = inject<ComputedRef<TimelineContext>>('timelineContext')!
-const dataContext = inject<any>('timelineDataContext')!
+const timelineContext = inject<ComputedRef<TimelineContext>>('timelineContext')
+const dataContext = inject<{
+  isPointMode: ComputedRef<boolean>
+  isRangeMode: ComputedRef<boolean>
+  getCurrentTimeValue: () => TimeValue
+  getCurrentTimeRange: () => TimeRange
+  setTimeValue: (value: TimeValue) => boolean
+  setTimeRange: (range: TimeRange) => boolean
+}>('timelineDataContext')
+
+if (!timelineContext) {
+  throw new Error('TimelinePicker must be used within TimelineContainer')
+}
+
+if (!dataContext) {
+  throw new Error('TimelinePicker: timelineDataContext not found')
+}
 
 // 创建便于访问的计算属性
 const contextValue = computed(() => timelineContext.value)
-
-
 
 // 内部状态
 const isFocused = ref(false)
@@ -84,10 +94,10 @@ const pointValue = computed(() => {
 const rangeValue = computed(() => {
   if (dataContext.isRangeMode.value) {
     const range = dataContext.getCurrentTimeRange()
-    return [
-      TimeUtils.toDayjs(range.start),
-      TimeUtils.toDayjs(range.end)
-    ] as [Dayjs, Dayjs]
+    return [TimeUtils.toDayjs(range.start), TimeUtils.toDayjs(range.end)] as [
+      Dayjs,
+      Dayjs,
+    ]
   }
   return undefined
 })
@@ -112,7 +122,8 @@ const rangePlaceholder = computed(() => {
 // 事件处理
 const handlePointChange = (value: string | Dayjs) => {
   if (value) {
-    const dayjsValue = typeof value === 'string' ? TimeUtils.toDayjs(value) : value
+    const dayjsValue =
+      typeof value === 'string' ? TimeUtils.toDayjs(value) : value
     dataContext.setTimeValue(dayjsValue)
   }
 }
@@ -121,11 +132,12 @@ const handleRangeChange = (values: [string, string] | [Dayjs, Dayjs]) => {
   if (values && values.length === 2) {
     const [start, end] = values
     if (start && end) {
-      const startDayjs = typeof start === 'string' ? TimeUtils.toDayjs(start) : start
+      const startDayjs =
+        typeof start === 'string' ? TimeUtils.toDayjs(start) : start
       const endDayjs = typeof end === 'string' ? TimeUtils.toDayjs(end) : end
       dataContext.setTimeRange({
         start: startDayjs,
-        end: endDayjs
+        end: endDayjs,
       })
     }
   }
@@ -148,12 +160,12 @@ const handleBlur = () => {
 // 暴露方法
 defineExpose({
   focus: () => {
-    // 可以添加聚焦逻辑
+    // 可添加聚焦逻辑 先不写
   },
   blur: () => {
-    // 可以添加失焦逻辑
+    // 可添加失焦逻辑 先不写
   },
-  isFocused: () => isFocused.value
+  isFocused: () => isFocused.value,
 })
 </script>
 
@@ -161,25 +173,25 @@ defineExpose({
 .timeline-picker {
   display: flex;
   align-items: center;
-  
+
   &__input {
     width: 100%;
-    
+
     :deep(.ant-picker) {
       border-color: var(--timeline-border-color, #d9d9d9);
       border-radius: 6px;
       transition: all 0.3s;
-      
+
       &:hover {
         border-color: var(--timeline-primary-color, #1890ff);
       }
-      
+
       &:focus,
       &.ant-picker-focused {
         border-color: var(--timeline-primary-color, #1890ff);
         box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
       }
-      
+
       &.ant-picker-disabled {
         background-color: #f5f5f5;
         border-color: #d9d9d9;
@@ -187,24 +199,24 @@ defineExpose({
         cursor: not-allowed;
       }
     }
-    
+
     :deep(.ant-picker-input) {
       input {
         font-family: inherit;
-        
+
         &::placeholder {
           color: rgba(0, 0, 0, 0.25);
         }
       }
     }
-    
+
     :deep(.ant-picker-suffix) {
       color: rgba(0, 0, 0, 0.25);
     }
-    
+
     :deep(.ant-picker-clear) {
       background-color: rgba(0, 0, 0, 0.25);
-      
+
       &:hover {
         background-color: rgba(0, 0, 0, 0.45);
       }

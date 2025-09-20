@@ -1,10 +1,10 @@
 <template>
-  <div 
+  <div
     class="timeline-container"
     :class="{
       'timeline-container--disabled': disabled,
       'timeline-container--point': mode === 'point',
-      'timeline-container--range': mode === 'range'
+      'timeline-container--range': mode === 'range',
     }"
   >
     <slot />
@@ -19,63 +19,72 @@ import type {
   TimelineContext,
   TimeValue,
   TimeRange,
-  TimelineMode
+  TimelineMode,
 } from '../../types/timeline'
 
 // 定义组件名称
 defineOptions({
-  name: 'TimelineContainer'
+  name: 'TimelineContainer',
 })
 
 // 定义 Props
 const props = withDefaults(defineProps<TimelineContainerProps>(), {
   mode: 'point',
-  disabled: false
+  disabled: false,
 })
 
 // 定义 Emits
 const emit = defineEmits<{
   'update:modelValue': [value: TimeValue | TimeRange]
-  'change': [value: TimeValue | TimeRange]
-  'timeChange': [value: TimeValue]
-  'rangeChange': [value: TimeRange]
-  'focus': []
-  'blur': []
+  change: [value: TimeValue | TimeRange]
+  timeChange: [value: TimeValue]
+  rangeChange: [value: TimeRange]
+  focus: []
+  blur: []
 }>()
 
-// 内部状态
+const mode = computed<TimelineMode>(() => props.mode)
+
+const validateValue = (value: TimeValue | TimeRange): boolean => {
+  if (mode.value === 'point') {
+    return TimeUtils.validateTimeValue(value as TimeValue).valid
+  } else {
+    return TimeUtils.validateTimeRange(value as TimeRange).valid
+  }
+}
+
 const getInitialValue = () => {
   if (props.modelValue) {
-    // 验证传入的值是否有效
     if (validateValue(props.modelValue)) {
       return props.modelValue
     } else {
-      console.warn('Invalid initial modelValue, using default:', props.modelValue)
+      console.warn(
+        'Invalid initial modelValue, using default:',
+        props.modelValue,
+      )
     }
   }
 
-  // 使用默认值
-  return props.mode === 'point' ? TimeUtils.now() : {
-    start: TimeUtils.startOfToday(),
-    end: TimeUtils.endOfToday()
-  }
+  return props.mode === 'point'
+    ? TimeUtils.now()
+    : {
+        start: TimeUtils.startOfToday(),
+        end: TimeUtils.endOfToday(),
+      }
 }
 
 const state = reactive({
   currentValue: getInitialValue(),
   step: 60,
   isDragging: false,
-  isFocused: false
+  isFocused: false,
 })
-
-// 计算属性
-const mode = computed<TimelineMode>(() => props.mode)
 
 const currentValue = computed({
   get: () => props.modelValue || state.currentValue,
   set: (value: TimeValue | TimeRange) => {
     updateValue(value)
-  }
+  },
 })
 
 // 方法
@@ -83,10 +92,10 @@ const updateValue = (value: TimeValue | TimeRange) => {
   // 验证值的有效性
   if (!validateValue(value)) {
     console.warn('Invalid time value:', value)
-    // 提供回退机制：使用当前时间或默认时间范围
-    const fallbackValue = mode.value === 'point'
-      ? TimeUtils.now()
-      : { start: TimeUtils.startOfToday(), end: TimeUtils.endOfToday() }
+    const fallbackValue =
+      mode.value === 'point'
+        ? TimeUtils.now()
+        : { start: TimeUtils.startOfToday(), end: TimeUtils.endOfToday() }
 
     console.warn('Using fallback value:', fallbackValue)
     state.currentValue = fallbackValue
@@ -116,14 +125,6 @@ const updateValue = (value: TimeValue | TimeRange) => {
   }
 }
 
-const validateValue = (value: TimeValue | TimeRange): boolean => {
-  if (mode.value === 'point') {
-    return TimeUtils.validateTimeValue(value as TimeValue).valid
-  } else {
-    return TimeUtils.validateTimeRange(value as TimeRange).valid
-  }
-}
-
 const setStep = (newStep: number) => {
   if (newStep > 0) {
     state.step = newStep
@@ -143,7 +144,6 @@ const setFocused = (focused: boolean) => {
   }
 }
 
-// 监听 props 变化
 watch(
   () => props.modelValue,
   (newValue) => {
@@ -157,7 +157,7 @@ watch(
       }
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 watch(
@@ -171,24 +171,25 @@ watch(
     } else {
       const rangeValue = {
         start: TimeUtils.startOfToday(),
-        end: TimeUtils.endOfToday()
+        end: TimeUtils.endOfToday(),
       }
       state.currentValue = rangeValue
       updateValue(rangeValue)
     }
-  }
+  },
 )
 
-// 数据管理方法
 const formatTimeValue = (value: TimeValue): string => {
   return TimeUtils.formatTime(value)
 }
 
-const normalizeValue = (value: TimeValue | TimeRange): TimeValue | TimeRange => {
+const normalizeValue = (
+  value: TimeValue | TimeRange,
+): TimeValue | TimeRange => {
   if (typeof value === 'object' && 'start' in value && 'end' in value) {
     return {
       start: TimeUtils.toDayjs(value.start),
-      end: TimeUtils.toDayjs(value.end)
+      end: TimeUtils.toDayjs(value.end),
     }
   }
   return TimeUtils.toDayjs(value as TimeValue)
@@ -207,7 +208,7 @@ const getCurrentTimeRange = (): TimeRange => {
     const point = currentValue.value as TimeValue
     return {
       start: point,
-      end: TimeUtils.toDayjs(point).add(1, 'hour')
+      end: TimeUtils.toDayjs(point).add(1, 'hour'),
     }
   }
   return currentValue.value as TimeRange
@@ -228,7 +229,7 @@ const setStartTime = (value: TimeValue): boolean => {
     const currentRange = getCurrentTimeRange()
     const newRange: TimeRange = {
       start: value,
-      end: currentRange.end
+      end: currentRange.end,
     }
     updateValue(newRange)
     return true
@@ -241,7 +242,7 @@ const setEndTime = (value: TimeValue): boolean => {
     const currentRange = getCurrentTimeRange()
     const newRange: TimeRange = {
       start: currentRange.start,
-      end: value
+      end: value,
     }
     updateValue(newRange)
     return true
@@ -249,7 +250,6 @@ const setEndTime = (value: TimeValue): boolean => {
   return setTimeValue(value)
 }
 
-// 提供完整的上下文给子组件
 const timelineContext = computed<TimelineContext>(() => ({
   mode: mode.value,
   currentValue: currentValue.value,
@@ -258,7 +258,7 @@ const timelineContext = computed<TimelineContext>(() => ({
   updateValue,
   validateValue,
   setDragging,
-  setFocused
+  setFocused,
 }))
 
 const dataContext = reactive({
@@ -272,13 +272,13 @@ const dataContext = reactive({
   setTimeRange,
   setStartTime,
   setEndTime,
-  isValidating: computed(() => false)
+  isValidating: computed(() => false),
 })
 
 provide('timelineContext', timelineContext)
 provide('timelineDataContext', dataContext)
 
-// 暴露方法给父组件
+// 暴露方法
 defineExpose({
   updateValue,
   validateValue,
@@ -288,7 +288,7 @@ defineExpose({
   getCurrentValue: () => state.currentValue,
   getStep: () => state.step,
   isDragging: () => state.isDragging,
-  isFocused: () => state.isFocused
+  isFocused: () => state.isFocused,
 })
 </script>
 
@@ -301,7 +301,8 @@ defineExpose({
   border-radius: 6px;
   padding: 16px;
   background: #fafafa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   &--disabled {
     opacity: 0.6;
@@ -311,10 +312,12 @@ defineExpose({
 
   &--point {
     // 时间点模式特定样式
+    // 暂时先不写
   }
 
   &--range {
     // 时间段模式特定样式
+    // 暂时先不写
   }
 }
 </style>

@@ -18,6 +18,7 @@ export default defineConfig({
       name: 'AnshunMeteoUI',
       fileName: (format) => `anshun-meteo-ui.${format}.js`,
     },
+    minify: false, // 禁用代码压缩
     rollupOptions: {
       external: ['vue', 'dayjs'],
       output: {
@@ -26,6 +27,9 @@ export default defineConfig({
           dayjs: 'dayjs',
         },
         exports: 'named',
+        // 禁用变量重命名和代码压缩
+        compact: false,
+        minifyInternalExports: false,
       },
     },
   },

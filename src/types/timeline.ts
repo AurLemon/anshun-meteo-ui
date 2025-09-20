@@ -90,15 +90,15 @@ export interface TimelineEvents {
   /** 值更新事件 */
   'update:modelValue': [value: TimeValue | TimeRange]
   /** 值变化事件 */
-  'change': [value: TimeValue | TimeRange]
+  change: [value: TimeValue | TimeRange]
   /** 时间点变化事件 */
-  'timeChange': [value: TimeValue]
+  timeChange: [value: TimeValue]
   /** 时间段变化事件 */
-  'rangeChange': [value: TimeRange]
+  rangeChange: [value: TimeRange]
   /** 获得焦点事件 */
-  'focus': []
+  focus: []
   /** 失去焦点事件 */
-  'blur': []
+  blur: []
 }
 
 /**

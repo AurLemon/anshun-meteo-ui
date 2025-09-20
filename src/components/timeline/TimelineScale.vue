@@ -1,14 +1,14 @@
 <template>
-  <div 
+  <div
     class="timeline-scale"
     :class="{
       'timeline-scale--scale': isScaleMode,
       'timeline-scale--button': isButtonMode,
-      'timeline-scale--disabled': contextValue.disabled
+      'timeline-scale--disabled': contextValue.disabled,
     }"
   >
     <!-- 刻度模式 -->
-    <div 
+    <div
       v-if="isScaleMode"
       ref="trackRef"
       class="timeline-scale__track"
@@ -17,42 +17,42 @@
     >
       <!-- 时间轴背景 -->
       <div class="timeline-scale__background"></div>
-      
+
       <!-- 时间刻度 -->
-      <div 
+      <div
         v-for="mark in timeMarks"
         :key="mark.time.valueOf()"
         class="timeline-scale__mark"
         :class="{
           'timeline-scale__mark--major': mark.major,
           'timeline-scale__mark--today': mark.isToday,
-          [`timeline-scale__mark--${mark.dateType}`]: true
+          [`timeline-scale__mark--${mark.dateType}`]: true,
         }"
-        :style="{ left: mark.position + '%' }"
+        :style="{ left: `${mark.position}%` }"
       >
         <div class="timeline-scale__mark-line"></div>
         <div class="timeline-scale__mark-label">{{ mark.label }}</div>
       </div>
-      
+
       <!-- 日期过渡标记 -->
-      <div 
+      <div
         v-if="showTransition"
         v-for="transition in dateTransitions"
         :key="transition.time.valueOf()"
         class="timeline-scale__transition"
         :class="`timeline-scale__transition--${transition.type}`"
-        :style="{ left: getTransitionPosition(transition.time) + '%' }"
+        :style="{ left: `${getTransitionPosition(transition.time)}%` }"
       >
         <div class="timeline-scale__transition-line"></div>
         <div class="timeline-scale__transition-label">
           {{ getTransitionLabel(transition.time, transition.type) }}
         </div>
       </div>
-      
+
       <!-- 时间指针 -->
-      <div 
+      <div
         class="timeline-scale__thumb"
-        :style="{ left: thumbPosition + '%' }"
+        :style="{ left: `${thumbPosition}%` }"
         @mousedown.stop="handleThumbMouseDown"
         @touchstart.stop.passive="handleThumbTouchStart"
       >
@@ -61,27 +61,27 @@
           {{ currentTimeLabel }}
         </div>
       </div>
-      
+
       <!-- 范围选择（仅在范围模式下显示） -->
-      <div 
+      <div
         v-if="dataContext.isRangeMode.value"
         class="timeline-scale__range"
         :style="rangeStyle"
       >
         <div class="timeline-scale__range-fill"></div>
-        <div 
+        <div
           class="timeline-scale__range-handle timeline-scale__range-handle--start"
           @mousedown.stop="handleRangeStartMouseDown"
           @touchstart.stop.passive="handleRangeStartTouchStart"
         ></div>
-        <div 
+        <div
           class="timeline-scale__range-handle timeline-scale__range-handle--end"
           @mousedown.stop="handleRangeEndMouseDown"
           @touchstart.stop.passive="handleRangeEndTouchStart"
         ></div>
       </div>
     </div>
-    
+
     <!-- 按钮模式 -->
     <div v-else class="timeline-scale__buttons">
       <button
@@ -91,7 +91,7 @@
         :class="{
           'timeline-scale__button--active': isActiveTime(mark.time),
           'timeline-scale__button--today': mark.isToday,
-          [`timeline-scale__button--${mark.dateType}`]: true
+          [`timeline-scale__button--${mark.dateType}`]: true,
         }"
         @click="handleButtonClick(mark.time)"
       >
@@ -106,14 +106,16 @@ import { inject, computed, ref, onMounted, onUnmounted } from 'vue'
 import { TimeUtils } from '../../utils/time'
 import type {
   TimelineScaleProps,
-  TimelineContext
+  TimelineContext,
+  TimeValue,
+  TimeRange,
 } from '../../types/timeline'
 import type { ComputedRef } from 'vue'
 import type { Dayjs } from 'dayjs'
 
 // 定义组件名称
 defineOptions({
-  name: 'TimelineScale'
+  name: 'TimelineScale',
 })
 
 // 定义 Props
@@ -122,28 +124,37 @@ const props = withDefaults(defineProps<TimelineScaleProps>(), {
   button: false,
   step: 60,
   showToday: true,
-  showTransition: true
+  showTransition: true,
 })
 
 // 注入上下文
 const timelineContext = inject<ComputedRef<TimelineContext>>('timelineContext')
-const dataContext = inject<any>('timelineDataContext')
+const dataContext = inject<{
+  isPointMode: ComputedRef<boolean>
+  isRangeMode: ComputedRef<boolean>
+  getCurrentTimeValue: () => TimeValue
+  getCurrentTimeRange: () => TimeRange
+  setTimeValue: (value: TimeValue) => boolean
+  setTimeRange: (range: TimeRange) => boolean
+  setStartTime: (value: TimeValue) => boolean
+  setEndTime: (value: TimeValue) => boolean
+}>('timelineDataContext')
 
 if (!timelineContext) {
   throw new Error('TimelineScale must be used within TimelineContainer')
 }
 
 if (!dataContext) {
-  throw new Error('TimelineScale: timelineDataContext not found. Make sure TimelineContainer provides it.')
+  throw new Error(
+    'TimelineScale: timelineDataContext not found. Make sure TimelineContainer provides it.',
+  )
 }
 
 // 创建便于访问的计算属性
 const contextValue = computed(() => timelineContext.value)
 
-
-
 // 模板引用
-const trackRef = ref<HTMLElement>()
+const trackRef = ref<HTMLElement | null>(null)
 
 // 内部状态
 const isDragging = ref(false)
@@ -152,7 +163,9 @@ const dragType = ref<'thumb' | 'range-start' | 'range-end'>('thumb')
 // 计算属性
 const isScaleMode = computed(() => {
   if (props.scale && props.button) {
-    console.warn('TimelineScale: Both scale and button props are set, using scale mode')
+    console.warn(
+      'TimelineScale: Both scale and button props are set, using scale mode',
+    )
     return true
   }
   return props.scale
@@ -174,7 +187,7 @@ const timeMarks = computed(() => {
   return TimeUtils.generateTimeMarks(
     displayRange.value.start,
     displayRange.value.end,
-    props.step
+    props.step,
   )
 })
 
@@ -182,7 +195,7 @@ const dateTransitions = computed(() => {
   if (!props.showTransition) return []
   return TimeUtils.getDateTransitions(
     displayRange.value.start,
-    displayRange.value.end
+    displayRange.value.end,
   )
 })
 
@@ -191,28 +204,28 @@ const thumbPosition = computed(() => {
   return TimeUtils.calculatePosition(
     currentValue,
     displayRange.value.start,
-    displayRange.value.end
+    displayRange.value.end,
   )
 })
 
 const rangeStyle = computed(() => {
   if (dataContext.isPointMode.value) return {}
-  
+
   const range = dataContext.getCurrentTimeRange()
   const startPos = TimeUtils.calculatePosition(
     range.start,
     displayRange.value.start,
-    displayRange.value.end
+    displayRange.value.end,
   )
   const endPos = TimeUtils.calculatePosition(
     range.end,
     displayRange.value.start,
-    displayRange.value.end
+    displayRange.value.end,
   )
-  
+
   return {
-    left: Math.min(startPos, endPos) + '%',
-    width: Math.abs(endPos - startPos) + '%'
+    left: `${Math.min(startPos, endPos)}%`,
+    width: `${Math.abs(endPos - startPos)}%`,
   }
 })
 
@@ -226,7 +239,7 @@ const getTransitionPosition = (time: Dayjs): number => {
   return TimeUtils.calculatePosition(
     time,
     displayRange.value.start,
-    displayRange.value.end
+    displayRange.value.end,
   )
 }
 
@@ -234,10 +247,14 @@ const getTransitionLabel = (time: Dayjs, type: string): string => {
   if (type === 'day-start') {
     const dateType = TimeUtils.getDateType(time)
     switch (dateType) {
-      case 'today': return '今日'
-      case 'tomorrow': return '明日'
-      case 'yesterday': return '昨日'
-      default: return time.format('MM-DD')
+      case 'today':
+        return '今日'
+      case 'tomorrow':
+        return '明日'
+      case 'yesterday':
+        return '昨日'
+      default:
+        return time.format('MM-DD')
     }
   }
   return ''
@@ -253,17 +270,24 @@ const calculateTimeFromEvent = (event: MouseEvent | TouchEvent): Dayjs => {
   if (!trackRef.value) return TimeUtils.now()
 
   const rect = trackRef.value.getBoundingClientRect()
-  const clientX = 'touches' in event ? event.touches[0]?.clientX || 0 : event.clientX
-  const percentage = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100))
+  const clientX =
+    'touches' in event ? event.touches[0]?.clientX || 0 : event.clientX
+  const percentage = Math.max(
+    0,
+    Math.min(100, ((clientX - rect.left) / rect.width) * 100),
+  )
 
   try {
     return TimeUtils.calculateTimeFromPosition(
       percentage,
       displayRange.value.start,
-      displayRange.value.end
+      displayRange.value.end,
     )
   } catch (error) {
-    console.warn('Error calculating time from event, using current time:', error)
+    console.warn(
+      'Error calculating time from event, using current time:',
+      error,
+    )
     return TimeUtils.now()
   }
 }
@@ -271,10 +295,10 @@ const calculateTimeFromEvent = (event: MouseEvent | TouchEvent): Dayjs => {
 // 事件处理
 const handleMouseDown = (event: MouseEvent) => {
   if (contextValue.value.disabled) return
-  
+
   const time = calculateTimeFromEvent(event)
   const alignedTime = TimeUtils.alignToStep(time, props.step)
-  
+
   if (dataContext.isPointMode.value) {
     dataContext.setTimeValue(alignedTime)
   } else {
@@ -282,13 +306,27 @@ const handleMouseDown = (event: MouseEvent) => {
     const currentRange = dataContext.getCurrentTimeRange()
     dataContext.setTimeRange({
       start: alignedTime,
-      end: currentRange.end
+      end: currentRange.end,
     })
   }
 }
 
 const handleTouchStart = (event: TouchEvent) => {
-  handleMouseDown(event as any)
+  if (contextValue.value.disabled) return
+
+  const time = calculateTimeFromEvent(event)
+  const alignedTime = TimeUtils.alignToStep(time, props.step)
+
+  if (dataContext.isPointMode.value) {
+    dataContext.setTimeValue(alignedTime)
+  } else {
+    // 在范围模式下，点击设置开始时间
+    const currentRange = dataContext.getCurrentTimeRange()
+    dataContext.setTimeRange({
+      start: alignedTime,
+      end: currentRange.end,
+    })
+  }
 }
 
 const handleThumbMouseDown = (event: MouseEvent) => {
@@ -304,7 +342,15 @@ const handleThumbMouseDown = (event: MouseEvent) => {
 }
 
 const handleThumbTouchStart = (event: TouchEvent) => {
-  handleThumbMouseDown(event as any)
+  if (contextValue.value.disabled) return
+
+  isDragging.value = true
+  dragType.value = 'thumb'
+  if (contextValue.value.setDragging) {
+    contextValue.value.setDragging(true)
+  }
+
+  event.preventDefault()
 }
 
 const handleRangeStartMouseDown = (event: MouseEvent) => {
@@ -320,7 +366,15 @@ const handleRangeStartMouseDown = (event: MouseEvent) => {
 }
 
 const handleRangeStartTouchStart = (event: TouchEvent) => {
-  handleRangeStartMouseDown(event as any)
+  if (contextValue.value.disabled) return
+
+  isDragging.value = true
+  dragType.value = 'range-start'
+  if (contextValue.value.setDragging) {
+    contextValue.value.setDragging(true)
+  }
+
+  event.preventDefault()
 }
 
 const handleRangeEndMouseDown = (event: MouseEvent) => {
@@ -336,14 +390,22 @@ const handleRangeEndMouseDown = (event: MouseEvent) => {
 }
 
 const handleRangeEndTouchStart = (event: TouchEvent) => {
-  handleRangeEndMouseDown(event as any)
+  if (contextValue.value.disabled) return
+
+  isDragging.value = true
+  dragType.value = 'range-end'
+  if (contextValue.value.setDragging) {
+    contextValue.value.setDragging(true)
+  }
+
+  event.preventDefault()
 }
 
 const handleButtonClick = (time: Dayjs) => {
   if (contextValue.value.disabled) return
-  
+
   const alignedTime = TimeUtils.alignToStep(time, props.step)
-  
+
   if (dataContext.isPointMode.value) {
     dataContext.setTimeValue(alignedTime)
   } else {
@@ -351,13 +413,13 @@ const handleButtonClick = (time: Dayjs) => {
     const duration = props.step
     const start = alignedTime
     const end = alignedTime.add(duration, 'minute')
-    
+
     dataContext.setTimeRange({ start, end })
   }
 }
 
 // 全局事件处理
-const handleGlobalMouseMove = (event: MouseEvent) => {
+const handleGlobalMouseMove = (event: MouseEvent | TouchEvent) => {
   if (!isDragging.value || contextValue.value.disabled) return
 
   const time = calculateTimeFromEvent(event)
@@ -366,11 +428,33 @@ const handleGlobalMouseMove = (event: MouseEvent) => {
   if (dragType.value === 'thumb') {
     if (dataContext.isPointMode.value) {
       dataContext.setTimeValue(alignedTime)
+    } else {
+      // 在范围模式下，拖拽整个范围
+      const currentRange = dataContext.getCurrentTimeRange()
+      const duration = TimeUtils.toDayjs(currentRange.end).diff(
+        TimeUtils.toDayjs(currentRange.start),
+        'minute',
+      )
+      const newStart = alignedTime
+      const newEnd = alignedTime.add(duration, 'minute')
+
+      dataContext.setTimeRange({
+        start: newStart,
+        end: newEnd,
+      })
     }
   } else if (dragType.value === 'range-start') {
-    dataContext.setStartTime(alignedTime)
+    const currentRange = dataContext.getCurrentTimeRange()
+    dataContext.setTimeRange({
+      start: alignedTime,
+      end: currentRange.end,
+    })
   } else if (dragType.value === 'range-end') {
-    dataContext.setEndTime(alignedTime)
+    const currentRange = dataContext.getCurrentTimeRange()
+    dataContext.setTimeRange({
+      start: currentRange.start,
+      end: alignedTime,
+    })
   }
 }
 
@@ -387,14 +471,14 @@ const handleGlobalMouseUp = () => {
 onMounted(() => {
   document.addEventListener('mousemove', handleGlobalMouseMove)
   document.addEventListener('mouseup', handleGlobalMouseUp)
-  document.addEventListener('touchmove', handleGlobalMouseMove as any)
+  document.addEventListener('touchmove', handleGlobalMouseMove)
   document.addEventListener('touchend', handleGlobalMouseUp)
 })
 
 onUnmounted(() => {
   document.removeEventListener('mousemove', handleGlobalMouseMove)
   document.removeEventListener('mouseup', handleGlobalMouseUp)
-  document.removeEventListener('touchmove', handleGlobalMouseMove as any)
+  document.removeEventListener('touchmove', handleGlobalMouseMove)
   document.removeEventListener('touchend', handleGlobalMouseUp)
 })
 
@@ -406,9 +490,9 @@ defineExpose({
     return TimeUtils.calculateTimeFromPosition(
       percentage,
       displayRange.value.start,
-      displayRange.value.end
+      displayRange.value.end,
     )
-  }
+  },
 })
 </script>
 
@@ -445,10 +529,12 @@ defineExpose({
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(90deg,
+    background: linear-gradient(
+      90deg,
       var(--timeline-past-color, #8c8c8c) 0%,
       var(--timeline-today-color, #52c41a) 50%,
-      var(--timeline-future-color, #1890ff) 100%);
+      var(--timeline-future-color, #1890ff) 100%
+    );
     opacity: 0.1;
     border-radius: 5px;
   }
