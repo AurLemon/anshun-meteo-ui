@@ -74,7 +74,9 @@
           @mousedown.stop="handleStartThumbMouseDown"
           @touchstart.stop.passive="handleStartThumbTouchStart"
         >
-          <div class="timeline-scale__thumb-handle timeline-scale__thumb-handle--start"></div>
+          <div
+            class="timeline-scale__thumb-handle timeline-scale__thumb-handle--start"
+          ></div>
           <div class="timeline-scale__thumb-tooltip">
             {{ startTimeLabel }}
           </div>
@@ -87,7 +89,9 @@
           @mousedown.stop="handleEndThumbMouseDown"
           @touchstart.stop.passive="handleEndThumbTouchStart"
         >
-          <div class="timeline-scale__thumb-handle timeline-scale__thumb-handle--end"></div>
+          <div
+            class="timeline-scale__thumb-handle timeline-scale__thumb-handle--end"
+          ></div>
           <div class="timeline-scale__thumb-tooltip">
             {{ endTimeLabel }}
           </div>
@@ -272,7 +276,7 @@ const endThumbPosition = computed(() => {
 })
 
 const rangeStyle = computed(() => {
-  if (dataContext.isPointMode.value) return {}
+  if (dataContext.isPointMode) return {}
 
   const range = dataContext.getCurrentTimeRange()
   const startPos = TimeUtils.calculatePosition(
@@ -298,14 +302,14 @@ const currentTimeLabel = computed(() => {
 })
 
 const startTimeLabel = computed(() => {
-  if (dataContext.isPointMode.value) return ''
+  if (dataContext.isPointMode) return ''
 
   const range = dataContext.getCurrentTimeRange()
   return TimeUtils.formatTime(range.start, 'HH:mm')
 })
 
 const endTimeLabel = computed(() => {
-  if (dataContext.isPointMode.value) return ''
+  if (dataContext.isPointMode) return ''
 
   const range = dataContext.getCurrentTimeRange()
   return TimeUtils.formatTime(range.end, 'HH:mm')
@@ -395,7 +399,7 @@ const handleMouseDown = (event: MouseEvent) => {
   const time = calculateTimeFromEvent(event)
   const alignedTime = TimeUtils.alignToStep(time, props.step)
 
-  if (dataContext.isPointMode.value) {
+  if (dataContext.isPointMode) {
     dataContext.setTimeValue(alignedTime)
   } else {
     // 在范围模式下，点击设置开始时间
@@ -413,7 +417,7 @@ const handleTouchStart = (event: TouchEvent) => {
   const time = calculateTimeFromEvent(event)
   const alignedTime = TimeUtils.alignToStep(time, props.step)
 
-  if (dataContext.isPointMode.value) {
+  if (dataContext.isPointMode) {
     dataContext.setTimeValue(alignedTime)
   } else {
     // 在范围模式下，点击设置开始时间
@@ -610,7 +614,7 @@ const handleButtonClick = (time: Dayjs) => {
 
   const alignedTime = TimeUtils.alignToStep(time, props.step)
 
-  if (dataContext.isPointMode.value) {
+  if (dataContext.isPointMode) {
     dataContext.setTimeValue(alignedTime)
   } else {
     // 在范围模式下，设置为以该时间为中心的时间段
@@ -667,7 +671,10 @@ const checkEdgeScroll = (event: MouseEvent | TouchEvent) => {
       const finalScrollAmount = scrollAmount * intensity
 
       currentDisplayRange.value = {
-        start: currentDisplayRange.value.start.subtract(finalScrollAmount, 'hour'),
+        start: currentDisplayRange.value.start.subtract(
+          finalScrollAmount,
+          'hour',
+        ),
         end: currentDisplayRange.value.end.subtract(finalScrollAmount, 'hour'),
       }
 
@@ -696,7 +703,10 @@ const checkEdgeScroll = (event: MouseEvent | TouchEvent) => {
 }
 
 // 启动持续滚动
-const startContinuousScroll = (direction: 'left' | 'right', scrollAmount: number) => {
+const startContinuousScroll = (
+  direction: 'left' | 'right',
+  scrollAmount: number,
+) => {
   // 清除之前的定时器
   stopContinuousScroll()
 
@@ -742,7 +752,7 @@ const handleGlobalMouseMove = (event: MouseEvent | TouchEvent) => {
 
   if (dragType.value === 'thumb') {
     // 时间指针拖拽：直接设置时间，不管是点模式还是范围模式
-    if (dataContext.isPointMode.value) {
+    if (dataContext.isPointMode) {
       dataContext.setTimeValue(alignedTime)
     } else {
       // 在范围模式下，拖拽时间指针应该移动整个范围，保持范围长度不变
@@ -788,7 +798,7 @@ const handleGlobalMouseUp = () => {
     lastMousePosition.value = null
 
     // 在范围模式下，检查并修正时间顺序
-    if (dataContext.isRangeMode.value) {
+    if (dataContext.isRangeMode) {
       const currentRange = dataContext.getCurrentTimeRange()
       const startTime = TimeUtils.toDayjs(currentRange.start)
       const endTime = TimeUtils.toDayjs(currentRange.end)
@@ -804,8 +814,12 @@ const handleGlobalMouseUp = () => {
 
     // 拖拽结束后，清除固定的显示范围，让时间轴重新自动调整
     // 延迟一点时间，确保最后的时间更新已经完成
+    // 在点模式下，如果是拖拽时间指针，保持当前显示范围，不要跳回去
     setTimeout(() => {
-      currentDisplayRange.value = null
+      // 只有在范围模式下，或者不是拖拽时间指针时，才清除显示范围
+      if (dataContext.isRangeMode || dragType.value !== 'thumb') {
+        currentDisplayRange.value = null
+      }
     }, 100)
   }
 }
