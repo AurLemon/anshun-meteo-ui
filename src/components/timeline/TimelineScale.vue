@@ -910,12 +910,7 @@ defineExpose({
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(
-      90deg,
-      var(--timeline-past-color, #8c8c8c) 0%,
-      var(--timeline-today-color, #52c41a) 50%,
-      var(--timeline-future-color, #1890ff) 100%
-    );
+    background: var(--timeline-background-color, #f5f5f5);
     opacity: 0.1;
     border-radius: 5px;
   }
