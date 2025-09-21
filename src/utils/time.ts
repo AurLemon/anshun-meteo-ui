@@ -235,16 +235,19 @@ export class TimeUtils {
    */
   static alignToStep(time: TimeValue, step: number): Dayjs {
     const target = this.toDayjs(time)
-    
-    if (step >= 60) {
-      // 步长大于等于1小时，对齐到小时
-      const hours = Math.round(target.minute() / 60)
-      return target.startOf('hour').add(hours, 'hour')
-    } else {
-      // 对齐到分钟
-      const minutes = Math.round(target.second() / 60)
-      return target.startOf('minute').add(minutes, 'minute')
-    }
+
+    // 将时间转换为从当天开始的总分钟数
+    const totalMinutes = target.hour() * 60 + target.minute()
+
+    // 按步长对齐
+    const alignedMinutes = Math.round(totalMinutes / step) * step
+
+    // 转换回小时和分钟
+    const alignedHours = Math.floor(alignedMinutes / 60)
+    const remainingMinutes = alignedMinutes % 60
+
+    // 返回对齐后的时间
+    return target.startOf('day').add(alignedHours, 'hour').add(remainingMinutes, 'minute')
   }
 
   /**
