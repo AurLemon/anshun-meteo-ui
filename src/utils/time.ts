@@ -236,6 +236,18 @@ export class TimeUtils {
   static alignToStep(time: TimeValue, step: number): Dayjs {
     const target = this.toDayjs(time)
 
+    // 确保步长有效
+    if (!step || step <= 0 || typeof step !== 'number') {
+      console.warn('Invalid step value, using 1 minute as fallback:', step)
+      step = 1
+    }
+
+    // 确保时间有效
+    if (!target.isValid()) {
+      console.warn('Invalid time in alignToStep, using current time:', time)
+      return dayjs()
+    }
+
     // 将时间转换为从当天开始的总分钟数
     const totalMinutes = target.hour() * 60 + target.minute()
 

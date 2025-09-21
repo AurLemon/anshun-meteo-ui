@@ -141,7 +141,6 @@
 import { inject, computed, ref, onMounted, onUnmounted } from 'vue'
 import { TimeUtils } from '../../utils/time'
 import type {
-  TimelineScaleProps,
   TimelineContext,
   TimeValue,
   TimeRange,
@@ -155,13 +154,27 @@ defineOptions({
 })
 
 // 定义 Props
-const props = withDefaults(defineProps<TimelineScaleProps>(), {
+const props = withDefaults(defineProps<{
+  scale?: boolean
+  button?: boolean
+  step?: number
+  dragStep?: number
+  showToday?: boolean
+  showTransition?: boolean
+  min?: TimeValue
+  max?: TimeValue
+}>(), {
   scale: true,
   button: false,
   step: 60,
+  dragStep: 60,
   showToday: true,
   showTransition: true,
 })
+
+// 计算属性获取步长值
+const stepValue = computed(() => props.step || 60)
+const dragStepValue = computed(() => props.dragStep || 60)
 
 // 注入上下文
 const timelineContext = inject<ComputedRef<TimelineContext>>('timelineContext')
@@ -232,7 +245,7 @@ const timeMarks = computed(() => {
   return TimeUtils.generateTimeMarks(
     displayRange.value.start,
     displayRange.value.end,
-    props.step,
+    stepValue.value,
   )
 })
 
@@ -397,7 +410,7 @@ const handleMouseDown = (event: MouseEvent) => {
   if (contextValue.value.disabled) return
 
   const time = calculateTimeFromEvent(event)
-  const alignedTime = TimeUtils.alignToStep(time, props.step)
+  const alignedTime = TimeUtils.alignToStep(time, dragStepValue.value)
 
   if (dataContext.isPointMode) {
     dataContext.setTimeValue(alignedTime)
@@ -415,7 +428,7 @@ const handleTouchStart = (event: TouchEvent) => {
   if (contextValue.value.disabled) return
 
   const time = calculateTimeFromEvent(event)
-  const alignedTime = TimeUtils.alignToStep(time, props.step)
+  const alignedTime = TimeUtils.alignToStep(time, dragStepValue.value)
 
   if (dataContext.isPointMode) {
     dataContext.setTimeValue(alignedTime)
@@ -612,13 +625,13 @@ const handleRangeEndTouchStart = (event: TouchEvent) => {
 const handleButtonClick = (time: Dayjs) => {
   if (contextValue.value.disabled) return
 
-  const alignedTime = TimeUtils.alignToStep(time, props.step)
+  const alignedTime = TimeUtils.alignToStep(time, stepValue.value)
 
   if (dataContext.isPointMode) {
     dataContext.setTimeValue(alignedTime)
   } else {
     // 在范围模式下，设置为以该时间为中心的时间段
-    const duration = props.step
+    const duration = stepValue.value
     const start = alignedTime
     const end = alignedTime.add(duration, 'minute')
 
@@ -748,7 +761,7 @@ const handleGlobalMouseMove = (event: MouseEvent | TouchEvent) => {
   checkEdgeScroll(event)
 
   const time = calculateTimeFromEvent(event)
-  const alignedTime = TimeUtils.alignToStep(time, props.step)
+  const alignedTime = TimeUtils.alignToStep(time, dragStepValue.value)
 
   if (dragType.value === 'thumb') {
     // 时间指针拖拽：直接设置时间，不管是点模式还是范围模式

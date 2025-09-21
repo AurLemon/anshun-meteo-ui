@@ -55,8 +55,10 @@ export interface TimelineScaleProps {
   scale?: boolean
   /** 按钮模式 */
   button?: boolean
-  /** 时间步长（分钟） */
+  /** 时间轴刻度步长（分钟） */
   step?: number
+  /** 时间指针拖动步长（分钟） */
+  dragStep?: number
   /** 显示今日标记 */
   showToday?: boolean
   /** 显示日期过渡 */
