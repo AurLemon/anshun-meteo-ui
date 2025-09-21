@@ -53,7 +53,7 @@
 
       <a-layout-footer class="layout-footer">
         <div class="footer-content">
-          <p>&copy; 2024 AurLemon. All rights reserved.</p>
+          <p>&copy; 2025 AurLemon. All rights reserved.</p>
         </div>
       </a-layout-footer>
     </a-layout>
