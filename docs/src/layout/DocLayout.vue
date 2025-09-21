@@ -7,7 +7,7 @@
       class="sider-fixed"
     >
       <div class="logo">
-        <h2>MeteoUI</h2>
+        <h2>Anshun Meteo UI</h2>
       </div>
       <a-menu v-model:selectedKeys="selectedKeys" mode="inline" theme="dark">
         <a-menu-item key="timeline">
