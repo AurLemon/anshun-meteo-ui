@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { inject, computed } from 'vue'
+import { inject, computed, provide } from 'vue'
 import type { TimelineDataProps, TimelineContext } from '../../types/timeline'
 import type { ComputedRef } from 'vue'
 
@@ -26,6 +26,19 @@ const props = withDefaults(defineProps<TimelineDataProps>(), {
 
 // 注入父组件上下文
 const timelineContext = inject<ComputedRef<TimelineContext>>('timelineContext')!
+const parentDataContext = inject<{
+  isPointMode: ComputedRef<boolean>
+  isRangeMode: ComputedRef<boolean>
+  getCurrentTimeValue: () => any
+  getCurrentTimeRange: () => any
+  setTimeValue: (value: any) => boolean
+  setTimeRange: (range: any) => boolean
+  formatTimeValue: (value: any) => string
+  normalizeValue: (value: any) => any
+  setStartTime: (value: any) => boolean
+  setEndTime: (value: any) => boolean
+  isValidating: ComputedRef<boolean>
+}>('timelineDataContext')!
 
 // 计算当前模式
 const isPointMode = computed(() => {
@@ -45,7 +58,15 @@ const isPointMode = computed(() => {
 
 const isRangeMode = computed(() => !isPointMode.value)
 
-// TimelineData 现在主要作为布局容器，数据逻辑由 TimelineContainer 管理
+// 创建新的 dataContext，覆盖模式信息
+const dataContext = {
+  ...parentDataContext,
+  isPointMode,
+  isRangeMode,
+}
+
+// 提供新的 dataContext 给子组件
+provide('timelineDataContext', dataContext)
 
 defineExpose({
   isPointMode,

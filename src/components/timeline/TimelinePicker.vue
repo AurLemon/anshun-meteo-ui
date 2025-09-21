@@ -85,7 +85,7 @@ const isFocused = ref(false)
 // 计算属性
 const pointValue = computed(() => {
   if (dataContext.isPointMode.value) {
-    const value = dataContext.getCurrentTimeValue()
+    const value = contextValue.value.currentValue as TimeValue
     return TimeUtils.toDayjs(value)
   }
   return undefined
@@ -93,11 +93,13 @@ const pointValue = computed(() => {
 
 const rangeValue = computed(() => {
   if (dataContext.isRangeMode.value) {
-    const range = dataContext.getCurrentTimeRange()
-    return [TimeUtils.toDayjs(range.start), TimeUtils.toDayjs(range.end)] as [
-      Dayjs,
-      Dayjs,
-    ]
+    const range = contextValue.value.currentValue as TimeRange
+    if (range && typeof range === 'object' && 'start' in range && 'end' in range) {
+      return [TimeUtils.toDayjs(range.start), TimeUtils.toDayjs(range.end)] as [
+        Dayjs,
+        Dayjs,
+      ]
+    }
   }
   return undefined
 })
