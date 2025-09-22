@@ -16,6 +16,12 @@
             <span>时间轴组件</span>
           </router-link>
         </a-menu-item>
+        <a-menu-item key="legend">
+          <router-link to="/legend">
+            <BgColorsOutlined />
+            <span>图例条组件</span>
+          </router-link>
+        </a-menu-item>
       </a-menu>
     </a-layout-sider>
 
@@ -63,7 +69,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-import { ClockCircleOutlined } from '@ant-design/icons-vue'
+import { ClockCircleOutlined, BgColorsOutlined } from '@ant-design/icons-vue'
 
 const route = useRoute()
 const collapsed = ref(false)
@@ -74,6 +80,8 @@ const currentComponent = computed(() => {
   switch (route.name) {
     case 'Timeline':
       return '时间轴组件'
+    case 'Legend':
+      return '图例条组件'
     default:
       return '组件'
   }

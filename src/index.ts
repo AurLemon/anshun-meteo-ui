@@ -13,6 +13,11 @@ import {
   TimelineScale
 } from './components/timeline'
 
+// 导入图例组件
+import {
+  LegendBar
+} from './components/legend'
+
 // 组件列表
 const components: Component[] = [
   // WeatherCard,
@@ -21,7 +26,8 @@ const components: Component[] = [
   TimelineContainer,
   TimelineData,
   TimelinePicker,
-  TimelineScale
+  TimelineScale,
+  LegendBar
 ]
 
 // 定义 install 方法
@@ -49,7 +55,15 @@ export {
   TimelineScale
 }
 
+// 导出图例组件
+export {
+  LegendBar
+}
+
 // 导出时间轴相关类型和工具
 export * from './components/timeline'
 export * from './types/timeline'
 export { TimeUtils } from './utils/time'
+
+// 导出图例相关类型
+export * from './types/legend'
