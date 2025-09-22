@@ -4,7 +4,12 @@
       v-model:collapsed="collapsed"
       collapsible
       width="280"
+      :collapsed-width="isMobile ? 0 : 80"
       class="sider-fixed"
+      :class="{
+        'sider-mobile': isMobile,
+        'sider-mobile-open': isMobile && !collapsed,
+      }"
     >
       <div class="logo">
         <h2>Anshun Meteo UI</h2>
@@ -31,17 +36,35 @@
       </a-menu>
     </a-layout-sider>
 
+    <!-- 移动端遮罩层 -->
+    <div
+      v-if="isMobile && !collapsed"
+      class="mobile-overlay"
+      @click="collapsed = true"
+    ></div>
+
     <a-layout
       :style="{
-        marginLeft: collapsed ? '80px' : '280px',
+        marginLeft: isMobile ? '0px' : collapsed ? '80px' : '280px',
         transition: 'margin-left 0.2s',
       }"
     >
       <a-layout-header class="layout-header">
-        <a-breadcrumb>
-          <a-breadcrumb-item>组件</a-breadcrumb-item>
-          <a-breadcrumb-item>{{ currentComponent }}</a-breadcrumb-item>
-        </a-breadcrumb>
+        <div class="header-content">
+          <!-- 移动端菜单按钮 -->
+          <button
+            v-if="isMobile"
+            class="mobile-menu-btn"
+            @click="toggleMobileMenu"
+          >
+            <span class="menu-icon">☰</span>
+          </button>
+
+          <a-breadcrumb>
+            <a-breadcrumb-item>组件</a-breadcrumb-item>
+            <a-breadcrumb-item>{{ currentComponent }}</a-breadcrumb-item>
+          </a-breadcrumb>
+        </div>
       </a-layout-header>
 
       <a-layout-content class="layout-content">
@@ -73,14 +96,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { ClockCircleOutlined, BgColorsOutlined, TableOutlined } from '@ant-design/icons-vue'
+import {
+  ClockCircleOutlined,
+  BgColorsOutlined,
+  TableOutlined,
+} from '@ant-design/icons-vue'
 
 const route = useRoute()
 const collapsed = ref(false)
 const selectedKeys = ref(['timeline'])
 const anchors = ref<Array<{ id: string; title: string }>>([])
+const isMobile = ref(false)
 
 const currentComponent = computed(() => {
   switch (route.name) {
@@ -113,7 +141,8 @@ watch(
 )
 
 const updateAnchors = () => {
-  const headings = document.querySelectorAll('h2, h3')
+  // 只获取 h2 标题，不包含 h3 等子级标题
+  const headings = document.querySelectorAll('h2')
   anchors.value = Array.from(headings).map((heading, index) => ({
     id: heading.id || `heading-${index}`,
     title: heading.textContent || '',
@@ -125,6 +154,34 @@ const updateAnchors = () => {
       heading.id = `heading-${index}`
     }
   })
+}
+
+// 检测移动端
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768
+  // 移动端默认收起侧边栏
+  if (isMobile.value) {
+    collapsed.value = true
+  }
+}
+
+// 监听窗口大小变化
+const handleResize = () => {
+  checkMobile()
+}
+
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
+// 移动端菜单切换
+const toggleMobileMenu = () => {
+  collapsed.value = !collapsed.value
 }
 </script>
 
@@ -140,6 +197,26 @@ const updateAnchors = () => {
   top: 0;
   z-index: 10;
   overflow: auto;
+}
+
+.sider-mobile {
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.sider-mobile-open {
+  transform: translateX(0) !important;
+}
+
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  z-index: 999;
 }
 
 .logo {
@@ -163,6 +240,33 @@ const updateAnchors = () => {
   display: flex;
   align-items: center;
   border-bottom: 1px solid #f0f0f0;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.mobile-menu-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  padding: 8px;
+  margin-right: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.mobile-menu-btn:hover {
+  background-color: #f5f5f5;
+}
+
+.menu-icon {
+  display: inline-block;
+  font-size: 20px;
+  color: #666;
 }
 
 .layout-content {
@@ -207,6 +311,26 @@ const updateAnchors = () => {
 
   .content-wrapper {
     flex-direction: column;
+  }
+
+  .layout-content {
+    margin: 12px;
+  }
+
+  .main-content {
+    padding: 16px;
+  }
+
+  .layout-header {
+    padding: 0 16px;
+  }
+
+  .logo h2 {
+    font-size: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: block;
   }
 }
 </style>
