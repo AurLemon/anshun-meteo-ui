@@ -16,6 +16,11 @@ const routes: RouteRecordRaw[] = [
     name: 'Legend',
     component: () => import('./views/LegendDoc.vue'),
   },
+  {
+    path: '/meteo-data',
+    name: 'MeteoData',
+    component: () => import('./views/MeteoDataDoc.vue'),
+  },
 ]
 
 const router = createRouter({

@@ -18,6 +18,14 @@ import {
   LegendBar
 } from './components/legend'
 
+// 导入气象数据组件
+import {
+  MeteoDataCard,
+  StationTableView,
+  RadarListView,
+  GridView
+} from './components/meteo-data'
+
 // 组件列表
 const components: Component[] = [
   // WeatherCard,
@@ -27,7 +35,11 @@ const components: Component[] = [
   TimelineData,
   TimelinePicker,
   TimelineScale,
-  LegendBar
+  LegendBar,
+  MeteoDataCard,
+  StationTableView,
+  RadarListView,
+  GridView
 ]
 
 // 定义 install 方法
@@ -60,6 +72,14 @@ export {
   LegendBar
 }
 
+// 导出气象数据组件
+export {
+  MeteoDataCard,
+  StationTableView,
+  RadarListView,
+  GridView
+}
+
 // 导出时间轴相关类型和工具
 export * from './components/timeline'
 export * from './types/timeline'
@@ -67,3 +87,6 @@ export { TimeUtils } from './utils/time'
 
 // 导出图例相关类型
 export * from './types/legend'
+
+// 导出气象数据相关类型
+export * from './types/meteo-data'
