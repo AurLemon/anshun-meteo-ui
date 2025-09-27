@@ -4,7 +4,8 @@ import type { RouteRecordRaw } from 'vue-router'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/timeline',
+    name: 'Home',
+    component: () => import('./views/HomeDoc.vue'),
   },
   {
     path: '/timeline',

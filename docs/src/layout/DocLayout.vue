@@ -15,6 +15,12 @@
         <h2>Anshun Meteo UI</h2>
       </div>
       <a-menu v-model:selectedKeys="selectedKeys" mode="inline" theme="dark">
+        <a-menu-item key="home">
+          <router-link to="/">
+            <HomeOutlined />
+            <span>首页</span>
+          </router-link>
+        </a-menu-item>
         <a-menu-item key="timeline">
           <router-link to="/timeline">
             <ClockCircleOutlined />
@@ -61,7 +67,12 @@
           </button>
 
           <a-breadcrumb>
-            <a-breadcrumb-item>组件</a-breadcrumb-item>
+            <a-breadcrumb-item v-if="route.name !== 'Home'">
+              <router-link to="/">首页</router-link>
+            </a-breadcrumb-item>
+            <a-breadcrumb-item v-if="route.name !== 'Home'"
+              >组件</a-breadcrumb-item
+            >
             <a-breadcrumb-item>{{ currentComponent }}</a-breadcrumb-item>
           </a-breadcrumb>
         </div>
@@ -102,16 +113,19 @@ import {
   ClockCircleOutlined,
   BgColorsOutlined,
   TableOutlined,
+  HomeOutlined,
 } from '@ant-design/icons-vue'
 
 const route = useRoute()
 const collapsed = ref(false)
-const selectedKeys = ref(['timeline'])
+const selectedKeys = ref(['home'])
 const anchors = ref<Array<{ id: string; title: string }>>([])
 const isMobile = ref(false)
 
 const currentComponent = computed(() => {
   switch (route.name) {
+    case 'Home':
+      return 'Anshun Meteo UI'
     case 'Timeline':
       return '时间轴组件'
     case 'Legend':
@@ -127,8 +141,15 @@ const currentComponent = computed(() => {
 watch(
   () => route.name,
   (newName) => {
-    selectedKeys.value = [newName?.toString().toLowerCase() || 'timeline']
+    const routeKeyMap: Record<string, string> = {
+      Home: 'home',
+      Timeline: 'timeline',
+      Legend: 'legend',
+      MeteoData: 'meteodata',
+    }
+    selectedKeys.value = [routeKeyMap[newName as string] || 'home']
   },
+  { immediate: true },
 )
 
 // 监听内容变化，更新锚点
