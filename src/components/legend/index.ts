@@ -2,18 +2,14 @@ import type { App } from 'vue'
 import LegendBar from './LegendBar.vue'
 
 // 导出组件
-export {
-  LegendBar
-}
+export { LegendBar }
 
 // 组件列表
-const components = [
-  LegendBar
-]
+const components = [LegendBar]
 
 // 安装函数
 export const install = (app: App) => {
-  components.forEach(component => {
+  components.forEach((component) => {
     if (component.name) {
       app.component(component.name, component)
     }
@@ -23,7 +19,7 @@ export const install = (app: App) => {
 // 默认导出
 export default {
   install,
-  LegendBar
+  LegendBar,
 }
 
 // 导出类型

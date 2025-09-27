@@ -30,14 +30,9 @@
         />
       </template>
 
-
-
       <!-- 视图C: 格点数据摘要 -->
       <template v-else-if="config.type === 'grid'">
-        <GridView
-          :config="config"
-          :data="data"
-        />
+        <GridView :config="config" :data="data" />
       </template>
     </div>
   </div>
@@ -47,7 +42,10 @@
 import { Spin as ASpin, Empty as AEmpty } from 'ant-design-vue'
 import StationTableView from './StationTableView.vue'
 import GridView from './GridView.vue'
-import type { MeteoDataCardProps, MeteoDataCardEvents } from '../../types/meteo-data'
+import type {
+  MeteoDataCardProps,
+  MeteoDataCardEvents,
+} from '../../types/meteo-data'
 
 // 定义组件名称
 defineOptions({

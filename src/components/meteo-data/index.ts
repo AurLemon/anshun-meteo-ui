@@ -4,22 +4,14 @@ import StationTableView from './StationTableView.vue'
 import GridView from './GridView.vue'
 
 // 导出组件
-export {
-  MeteoDataCard,
-  StationTableView,
-  GridView
-}
+export { MeteoDataCard, StationTableView, GridView }
 
 // 组件列表
-const components = [
-  MeteoDataCard,
-  StationTableView,
-  GridView
-]
+const components = [MeteoDataCard, StationTableView, GridView]
 
 // 安装函数
 export const install = (app: App) => {
-  components.forEach(component => {
+  components.forEach((component) => {
     if (component.name) {
       app.component(component.name, component)
     }
@@ -31,7 +23,7 @@ export default {
   install,
   MeteoDataCard,
   StationTableView,
-  GridView
+  GridView,
 }
 
 // 导出类型

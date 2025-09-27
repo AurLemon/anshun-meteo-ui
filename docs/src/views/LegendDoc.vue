@@ -12,7 +12,9 @@
 
     <section id="installation">
       <h2>安装</h2>
-      <pre class="code-block"><code>import { LegendBar } from 'anshun-meteo-ui'</code></pre>
+      <pre
+        class="code-block"
+      ><code>import { LegendBar } from 'anshun-meteo-ui'</code></pre>
     </section>
 
     <section id="basic-usage">
@@ -113,9 +115,7 @@ const temperatureRanges = [
           </div>
         </div>
       </div>
-      <p class="demo-tip">
-        组件会自动限制count值在1-10之间
-      </p>
+      <p class="demo-tip">组件会自动限制count值在1-10之间</p>
     </section>
 
     <section id="style-config">
@@ -218,7 +218,7 @@ const temperatureRanges = ref([
   { min: 0, max: 10, color: '#00ccff' },
   { min: 10, max: 20, color: '#66ff66' },
   { min: 20, max: 30, color: '#ffff00' },
-  { min: 30, max: 40, color: '#ff6600' }
+  { min: 30, max: 40, color: '#ff6600' },
 ])
 
 // 降水量区间配置
@@ -227,7 +227,7 @@ const precipitationRanges = ref([
   { min: 0.1, max: 10, color: '#90EE90', label: '小雨' },
   { min: 10, max: 25, color: '#32CD32', label: '中雨' },
   { min: 25, max: 50, color: '#FFD700', label: '大雨' },
-  { min: 50, max: 100, color: '#FF4500', label: '暴雨' }
+  { min: 50, max: 100, color: '#FF4500', label: '暴雨' },
 ])
 
 // API表格数据

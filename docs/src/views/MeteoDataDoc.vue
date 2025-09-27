@@ -63,8 +63,6 @@ const temperatureConfig = {
 &lt;/script&gt;</code></pre>
     </section>
 
-
-
     <section id="grid-usage">
       <h2>格点数据统计</h2>
       <div class="demo-container">
@@ -115,8 +113,6 @@ const temperatureConfig = {
         :pagination="false"
       />
 
-
-
       <h4>GridConfig (格点配置)</h4>
       <a-table
         :columns="configColumns"
@@ -138,19 +134,55 @@ const selectedStationId = ref(null)
 
 // 模拟温度数据
 const temperatureData = ref([
-  { station_id: '001', station_name: '北京', temperature: 25.6, latitude: 39.9, longitude: 116.4 },
-  { station_id: '002', station_name: '上海', temperature: 28.3, latitude: 31.2, longitude: 121.5 },
-  { station_id: '003', station_name: '广州', temperature: 32.1, latitude: 23.1, longitude: 113.3 },
-  { station_id: '004', station_name: '深圳', temperature: 31.8, latitude: 22.5, longitude: 114.1 },
-  { station_id: '005', station_name: '杭州', temperature: 27.9, latitude: 30.3, longitude: 120.2 },
+  {
+    station_id: '001',
+    station_name: '北京',
+    temperature: 25.6,
+    latitude: 39.9,
+    longitude: 116.4,
+  },
+  {
+    station_id: '002',
+    station_name: '上海',
+    temperature: 28.3,
+    latitude: 31.2,
+    longitude: 121.5,
+  },
+  {
+    station_id: '003',
+    station_name: '广州',
+    temperature: 32.1,
+    latitude: 23.1,
+    longitude: 113.3,
+  },
+  {
+    station_id: '004',
+    station_name: '深圳',
+    temperature: 31.8,
+    latitude: 22.5,
+    longitude: 114.1,
+  },
+  {
+    station_id: '005',
+    station_name: '杭州',
+    temperature: 27.9,
+    latitude: 30.3,
+    longitude: 120.2,
+  },
 ])
-
-
 
 // 模拟格点数据
 const gridData = ref([
-  { value: 25.6 }, { value: 28.3 }, { value: 32.1 }, { value: 31.8 }, { value: 27.9 },
-  { value: 24.2 }, { value: 29.7 }, { value: 33.4 }, { value: 30.1 }, { value: 26.8 },
+  { value: 25.6 },
+  { value: 28.3 },
+  { value: 32.1 },
+  { value: 31.8 },
+  { value: 27.9 },
+  { value: 24.2 },
+  { value: 29.7 },
+  { value: 33.4 },
+  { value: 30.1 },
+  { value: 26.8 },
 ])
 
 // 配置对象
@@ -167,8 +199,6 @@ const temperatureConfig = {
   ],
 }
 
-
-
 const gridConfig = {
   type: 'grid',
   elementName: '2米温度',
@@ -178,8 +208,8 @@ const gridConfig = {
     showMin: true,
     showAvg: true,
     showCount: true,
-    precision: 1
-  }
+    precision: 1,
+  },
 }
 
 // 事件处理
@@ -187,8 +217,6 @@ const handleStationSelect = (station: any) => {
   console.log('选中站点:', station)
   selectedStationId.value = station.station_id
 }
-
-
 
 // API表格数据
 const propsColumns = [
@@ -265,19 +293,42 @@ const configColumns = [
 
 const stationConfigData = [
   { prop: 'type', description: '配置类型', type: '"station"', required: '是' },
-  { prop: 'columns', description: '表格列配置', type: 'ColumnConfig[]', required: '是' },
-  { prop: 'valueField', description: '数值字段名', type: 'string', required: '是' },
+  {
+    prop: 'columns',
+    description: '表格列配置',
+    type: 'ColumnConfig[]',
+    required: '是',
+  },
+  {
+    prop: 'valueField',
+    description: '数值字段名',
+    type: 'string',
+    required: '是',
+  },
   { prop: 'unit', description: '数值单位', type: 'string', required: '是' },
-  { prop: 'mapKeys', description: '地图交互字段', type: 'object', required: '是' },
+  {
+    prop: 'mapKeys',
+    description: '地图交互字段',
+    type: 'object',
+    required: '是',
+  },
 ]
-
-
 
 const gridConfigData = [
   { prop: 'type', description: '配置类型', type: '"grid"', required: '是' },
-  { prop: 'elementName', description: '要素名称', type: 'string', required: '是' },
+  {
+    prop: 'elementName',
+    description: '要素名称',
+    type: 'string',
+    required: '是',
+  },
   { prop: 'unit', description: '数值单位', type: 'string', required: '是' },
-  { prop: 'statistics', description: '统计配置', type: 'object', required: '否' },
+  {
+    prop: 'statistics',
+    description: '统计配置',
+    type: 'object',
+    required: '否',
+  },
 ]
 </script>
 

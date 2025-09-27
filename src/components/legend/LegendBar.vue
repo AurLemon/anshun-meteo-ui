@@ -8,7 +8,7 @@
         class="legend-bar-item"
         :style="{
           backgroundColor: segment.color,
-          flex: getSegmentFlex(segment)
+          flex: getSegmentFlex(segment),
         }"
         @click="handleItemClick(segment, index)"
         @mouseenter="handleItemHover(segment, index)"
@@ -32,7 +32,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { LegendBarProps, LegendBarEvents, LegendRange, ProcessedLegendData, LegendBarItem } from '../../types/legend'
+import type {
+  LegendBarProps,
+  LegendBarEvents,
+  LegendRange,
+  ProcessedLegendData,
+  LegendBarItem,
+} from '../../types/legend'
 
 // 定义组件名称
 defineOptions({
@@ -92,7 +98,7 @@ const processRangesData = (ranges: LegendRange[]): ProcessedLegendData => {
 
   // 生成数值标签（区间的边界值）
   const valueSet = new Set<number>()
-  ranges.forEach(range => {
+  ranges.forEach((range) => {
     valueSet.add(range.min)
     valueSet.add(range.max)
   })
@@ -100,10 +106,11 @@ const processRangesData = (ranges: LegendRange[]): ProcessedLegendData => {
   const sortedValues = Array.from(valueSet).sort((a, b) => a - b)
   const totalRange = sortedValues[sortedValues.length - 1] - sortedValues[0]
 
-  const labels = sortedValues.map(value => ({
+  const labels = sortedValues.map((value) => ({
     value,
     label: formatLabel(value),
-    position: totalRange === 0 ? 0 : ((value - sortedValues[0]) / totalRange) * 100,
+    position:
+      totalRange === 0 ? 0 : ((value - sortedValues[0]) / totalRange) * 100,
   }))
 
   return { segments, labels }
@@ -145,7 +152,10 @@ const getSegmentFlex = (segment: LegendBarItem): number => {
   if (props.ranges && props.ranges.length > 0) {
     // 基于实际数值范围计算比例
     const range = segment.max - segment.min
-    const totalRange = processedData.value.segments.reduce((sum, s) => sum + (s.max - s.min), 0)
+    const totalRange = processedData.value.segments.reduce(
+      (sum, s) => sum + (s.max - s.min),
+      0,
+    )
     return totalRange === 0 ? 1 : range / totalRange
   }
   // 传统方式：等分

@@ -95,7 +95,9 @@ const sortedData = computed(() => {
     ...item,
     rank: index + 1,
     key: item[props.config.mapKeys.id] || index,
-    isInvalid: props.config.isInvalidValue ? props.config.isInvalidValue(item[props.config.valueField]) : false,
+    isInvalid: props.config.isInvalidValue
+      ? props.config.isInvalidValue(item[props.config.valueField])
+      : false,
   }))
 })
 
@@ -114,17 +116,19 @@ const showDataSummary = computed(() => totalDataCount.value > 0)
 
 // 表格列配置
 const tableColumns = computed(() => {
-  return props.config.columns.map(col => ({
+  return props.config.columns.map((col) => ({
     title: col.title,
     dataIndex: col.key,
     key: col.key,
     width: col.width,
     align: col.align || 'left',
-    sorter: col.sortable ? (a: any, b: any) => {
-      const valueA = Number(a[col.key]) || 0
-      const valueB = Number(b[col.key]) || 0
-      return valueA - valueB
-    } : false,
+    sorter: col.sortable
+      ? (a: any, b: any) => {
+          const valueA = Number(a[col.key]) || 0
+          const valueB = Number(b[col.key]) || 0
+          return valueA - valueB
+        }
+      : false,
   }))
 })
 
@@ -162,7 +166,8 @@ const getRowClassName = (record: any) => {
 const customRow = (record: any, index?: number) => {
   return {
     onClick: () => {
-      const globalIndex = (currentPage.value - 1) * pageSize.value + (index || 0)
+      const globalIndex =
+        (currentPage.value - 1) * pageSize.value + (index || 0)
       emit('item-select', record)
       emit('row-click', record, globalIndex)
 
@@ -238,20 +243,32 @@ const setupExternalEventListeners = () => {
   }
 
   if (config.enableLegendClick) {
-    window.addEventListener('legend-clicked', handleLegendClick as EventListener)
+    window.addEventListener(
+      'legend-clicked',
+      handleLegendClick as EventListener,
+    )
   }
 
   if (config.enableMarkerClick) {
-    window.addEventListener('marker-clicked', handleMarkerClick as EventListener)
+    window.addEventListener(
+      'marker-clicked',
+      handleMarkerClick as EventListener,
+    )
   }
 
   // 组件卸载时清理监听器
   onBeforeUnmount(() => {
     if (config.enableLegendClick) {
-      window.removeEventListener('legend-clicked', handleLegendClick as EventListener)
+      window.removeEventListener(
+        'legend-clicked',
+        handleLegendClick as EventListener,
+      )
     }
     if (config.enableMarkerClick) {
-      window.removeEventListener('marker-clicked', handleMarkerClick as EventListener)
+      window.removeEventListener(
+        'marker-clicked',
+        handleMarkerClick as EventListener,
+      )
     }
   })
 }

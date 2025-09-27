@@ -27,7 +27,9 @@
           </tr>
           <tr>
             <td class="stat-label">有效数据</td>
-            <td class="stat-value">{{ stats.validCount }} / {{ stats.count }}</td>
+            <td class="stat-value">
+              {{ stats.validCount }} / {{ stats.count }}
+            </td>
           </tr>
           <tr>
             <td class="stat-label">数据完整性</td>
@@ -90,13 +92,15 @@ const stats = computed((): StatisticsData => {
   }
 
   // 提取数值数据（假设数据是数值数组或包含value字段的对象数组）
-  const values = props.data.map(item => {
-    if (typeof item === 'number') return item
-    if (typeof item === 'object' && item !== null) {
-      return Number(item.value) || Number(item.data) || 0
-    }
-    return Number(item) || 0
-  }).filter(val => !isNaN(val) && isFinite(val))
+  const values = props.data
+    .map((item) => {
+      if (typeof item === 'number') return item
+      if (typeof item === 'object' && item !== null) {
+        return Number(item.value) || Number(item.data) || 0
+      }
+      return Number(item) || 0
+    })
+    .filter((val) => !isNaN(val) && isFinite(val))
 
   if (values.length === 0) {
     return {
@@ -141,15 +145,15 @@ const getElementTypeName = () => {
   if (!props.config.elementName) return ''
 
   const elementMap: Record<string, string> = {
-    'CLDAS_TAIR': '温度',
-    'CLDAS_QAIR': '湿度',
-    'CLDAS_WIND': '风速',
-    'CLDAS_PRE': '降水',
-    'temperature': '温度',
-    'humidity': '湿度',
-    'wind': '风速',
-    'precipitation': '降水',
-    'pressure': '气压',
+    CLDAS_TAIR: '温度',
+    CLDAS_QAIR: '湿度',
+    CLDAS_WIND: '风速',
+    CLDAS_PRE: '降水',
+    temperature: '温度',
+    humidity: '湿度',
+    wind: '风速',
+    precipitation: '降水',
+    pressure: '气压',
   }
 
   return elementMap[props.config.elementName] || props.config.elementName
