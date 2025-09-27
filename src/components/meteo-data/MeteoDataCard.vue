@@ -30,14 +30,7 @@
         />
       </template>
 
-      <!-- 视图B: 雷达数据列表 -->
-      <template v-else-if="config.type === 'radar'">
-        <RadarListView
-          :config="config"
-          :data="data"
-          @radar-image-select="$emit('radar-image-select', $event)"
-        />
-      </template>
+
 
       <!-- 视图C: 格点数据摘要 -->
       <template v-else-if="config.type === 'grid'">
@@ -53,7 +46,6 @@
 <script setup lang="ts">
 import { Spin as ASpin, Empty as AEmpty } from 'ant-design-vue'
 import StationTableView from './StationTableView.vue'
-import RadarListView from './RadarListView.vue'
 import GridView from './GridView.vue'
 import type { MeteoDataCardProps, MeteoDataCardEvents } from '../../types/meteo-data'
 

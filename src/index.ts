@@ -22,7 +22,6 @@ import {
 import {
   MeteoDataCard,
   StationTableView,
-  RadarListView,
   GridView
 } from './components/meteo-data'
 
@@ -38,7 +37,6 @@ const components: Component[] = [
   LegendBar,
   MeteoDataCard,
   StationTableView,
-  RadarListView,
   GridView
 ]
 
@@ -76,7 +74,6 @@ export {
 export {
   MeteoDataCard,
   StationTableView,
-  RadarListView,
   GridView
 }
 

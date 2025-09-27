@@ -52,42 +52,7 @@ export interface StationConfig {
   isInvalidValue?: (value: any) => boolean
 }
 
-/**
- * 雷达数据（图片列表视图）的配置
- */
-export interface RadarConfig {
-  type: 'radar'
-  /** 从文件名解析时间的正则表达式和格式 */
-  timeParsing: {
-    /** 正则表达式，例如: /(\d{8})_(\d{4})/ */
-    regex: string
-    /** 时间格式，例如: 'YYYYMMDD_HHmm' */
-    format: string
-    /** 支持多种时间格式 */
-    fallbackFormats?: Array<{
-      regex: string
-      format: string
-    }>
-  }
-  /** 图片显示配置 */
-  imageDisplay?: {
-    /** 图片宽度 */
-    width?: number
-    /** 图片高度 */
-    height?: number
-    /** 是否显示预览 */
-    showPreview?: boolean
-    /** 最大显示数量 */
-    maxDisplayCount?: number
-  }
-  /** 覆盖范围信息 */
-  bounds?: {
-    /** 西南角坐标 */
-    southwest: [number, number]
-    /** 东北角坐标 */
-    northeast: [number, number]
-  }
-}
+
 
 /**
  * CLDAS格点数据（统计摘要视图）的配置
@@ -116,7 +81,7 @@ export interface GridConfig {
 /**
  * 配置联合类型
  */
-export type MeteoDataConfig = StationConfig | RadarConfig | GridConfig
+export type MeteoDataConfig = StationConfig | GridConfig
 
 /**
  * MeteoDataCard 组件的 Props
@@ -140,8 +105,6 @@ export interface MeteoDataCardProps {
 export interface MeteoDataCardEvents {
   /** 当用户在组件内部选择一个数据项时触发 */
   'item-select': [item: any]
-  /** 当用户在雷达图片列表中选择一张图片时触发 */
-  'radar-image-select': [imageInfo: any]
   /** 当数据项被高亮时触发 */
   'item-highlight': [item: any]
   /** 当数据项失去高亮时触发 */
@@ -152,21 +115,7 @@ export interface MeteoDataCardEvents {
   'row-click': [record: any, globalIndex: number]
 }
 
-/**
- * 处理后的雷达图片信息
- */
-export interface ProcessedRadarImage {
-  /** 图片URL */
-  url: string
-  /** 时间显示文本 */
-  timeDisplay: string
-  /** 时间戳 */
-  timestamp: number
-  /** 原始文件名 */
-  filename: string
-  /** 原始索引 */
-  originalIndex: number
-}
+
 
 /**
  * 统计数据
@@ -215,13 +164,7 @@ export interface StationTableProps {
   highlightedId?: string | number
 }
 
-/**
- * RadarListView 组件属性
- */
-export interface RadarListProps {
-  config: RadarConfig
-  data: string[]
-}
+
 
 /**
  * GridView 组件属性

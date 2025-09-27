@@ -5,17 +5,16 @@
     <section id="overview">
       <h2>概述</h2>
       <p>
-        气象数据卡片组件是一个智能的、面向气象业务的复合组件，能够根据不同气象数据类型（如站点观测、雷达图、格点产品等）
+        气象数据卡片组件是一个智能的、面向气象业务的复合组件，能够根据不同气象数据类型（如站点观测、格点产品等）
         自动切换渲染模式。它集数据展示、统计摘要、交互功能于一体，是气象系统中数据展示的核心组件。
       </p>
     </section>
 
     <section id="installation">
       <h2>安装</h2>
-      <pre class="code-block"><code>import { 
+      <pre class="code-block"><code>import {
   MeteoDataCard,
   StationTableView,
-  RadarListView,
   GridView
 } from 'anshun-meteo-ui'</code></pre>
     </section>
@@ -64,26 +63,7 @@ const temperatureConfig = {
 &lt;/script&gt;</code></pre>
     </section>
 
-    <section id="radar-usage">
-      <h2>雷达图片列表</h2>
-      <div class="demo-container">
-        <MeteoDataCard
-          title="雷达组合反射率"
-          :is-loading="isRadarLoading"
-          :data="radarUrls"
-          :config="radarConfig"
-          @radar-image-select="handleRadarSelect"
-        />
-      </div>
 
-      <pre class="code-block"><code>const radarConfig = {
-  type: 'radar',
-  timeParsing: {
-    regex: '_(\\d{14})_',
-    format: 'YYYYMMDDHHmmss'
-  }
-}</code></pre>
-    </section>
 
     <section id="grid-usage">
       <h2>格点数据统计</h2>
@@ -135,12 +115,7 @@ const temperatureConfig = {
         :pagination="false"
       />
 
-      <h4>RadarConfig (雷达配置)</h4>
-      <a-table
-        :columns="configColumns"
-        :data-source="radarConfigData"
-        :pagination="false"
-      />
+
 
       <h4>GridConfig (格点配置)</h4>
       <a-table
@@ -158,7 +133,6 @@ import { MeteoDataCard } from 'anshun-meteo-ui'
 
 // 演示数据
 const isStationLoading = ref(false)
-const isRadarLoading = ref(false)
 const isGridLoading = ref(false)
 const selectedStationId = ref(null)
 
@@ -171,12 +145,7 @@ const temperatureData = ref([
   { station_id: '005', station_name: '杭州', temperature: 27.9, latitude: 30.3, longitude: 120.2 },
 ])
 
-// 模拟雷达数据
-const radarUrls = ref([
-  'https://example.com/radar_20241201_1200.png',
-  'https://example.com/radar_20241201_1100.png',
-  'https://example.com/radar_20241201_1000.png',
-])
+
 
 // 模拟格点数据
 const gridData = ref([
@@ -198,13 +167,7 @@ const temperatureConfig = {
   ],
 }
 
-const radarConfig = {
-  type: 'radar',
-  timeParsing: {
-    regex: '_(\\d{14})_',
-    format: 'YYYYMMDDHHmmss'
-  }
-}
+
 
 const gridConfig = {
   type: 'grid',
@@ -225,9 +188,7 @@ const handleStationSelect = (station: any) => {
   selectedStationId.value = station.station_id
 }
 
-const handleRadarSelect = (imageInfo: any) => {
-  console.log('选中雷达图:', imageInfo)
-}
+
 
 // API表格数据
 const propsColumns = [
@@ -241,7 +202,7 @@ const propsData = [
   {
     prop: 'config',
     description: '配置对象，决定组件渲染模式',
-    type: 'StationConfig | RadarConfig | GridConfig',
+    type: 'StationConfig | GridConfig',
     default: '-',
   },
   {
@@ -282,11 +243,7 @@ const eventData = [
     description: '选择数据项时触发',
     params: 'item: any',
   },
-  {
-    event: 'radar-image-select',
-    description: '选择雷达图片时触发',
-    params: 'imageInfo: ProcessedRadarImage',
-  },
+
   {
     event: 'item-highlight',
     description: '高亮数据项时触发',
@@ -314,10 +271,7 @@ const stationConfigData = [
   { prop: 'mapKeys', description: '地图交互字段', type: 'object', required: '是' },
 ]
 
-const radarConfigData = [
-  { prop: 'type', description: '配置类型', type: '"radar"', required: '是' },
-  { prop: 'timeParsing', description: '时间解析配置', type: 'object', required: '是' },
-]
+
 
 const gridConfigData = [
   { prop: 'type', description: '配置类型', type: '"grid"', required: '是' },

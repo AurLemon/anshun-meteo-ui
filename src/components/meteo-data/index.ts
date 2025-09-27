@@ -1,14 +1,12 @@
 import type { App } from 'vue'
 import MeteoDataCard from './MeteoDataCard.vue'
 import StationTableView from './StationTableView.vue'
-import RadarListView from './RadarListView.vue'
 import GridView from './GridView.vue'
 
 // 导出组件
 export {
   MeteoDataCard,
   StationTableView,
-  RadarListView,
   GridView
 }
 
@@ -16,7 +14,6 @@ export {
 const components = [
   MeteoDataCard,
   StationTableView,
-  RadarListView,
   GridView
 ]
 
@@ -34,7 +31,6 @@ export default {
   install,
   MeteoDataCard,
   StationTableView,
-  RadarListView,
   GridView
 }
 
