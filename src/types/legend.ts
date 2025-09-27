@@ -1,17 +1,35 @@
 /**
+ * 图例区间配置
+ */
+export interface LegendRange {
+  /** 区间最小值 */
+  min: number
+  /** 区间最大值 */
+  max: number
+  /** 区间颜色 */
+  color: string
+  /** 可选的自定义标签 */
+  label?: string
+}
+
+/**
  * 图例条组件属性
  */
 export interface LegendBarProps {
-  /** 图例条数量 */
+  /** 区间配置数组（优先级最高） */
+  ranges?: LegendRange[]
+  /** 图例条数量（传统方式，向后兼容） */
   count?: number
-  /** 自定义颜色数组 */
+  /** 自定义颜色数组（传统方式，向后兼容） */
   colors?: string[]
-  /** 自定义数值数组 */
+  /** 自定义数值数组（传统方式，向后兼容） */
   values?: number[]
   /** 图例条宽度 */
   width?: number | string
   /** 图例条高度 */
   height?: number | string
+  /** 最小宽度 */
+  minWidth?: number
   /** 是否显示边框 */
   showBorder?: boolean
   /** 边框颜色 */
@@ -46,12 +64,28 @@ export interface LegendBarConfig {
 export interface LegendBarItem {
   /** 颜色值 */
   color: string
-  /** 数值 */
-  value: number
+  /** 最小值 */
+  min: number
+  /** 最大值 */
+  max: number
   /** 标签 */
   label: string
   /** 索引 */
   index: number
+}
+
+/**
+ * 处理后的图例数据
+ */
+export interface ProcessedLegendData {
+  /** 颜色段数组 */
+  segments: LegendBarItem[]
+  /** 数值标签数组 */
+  labels: Array<{
+    value: number
+    label: string
+    position: number
+  }>
 }
 
 /**

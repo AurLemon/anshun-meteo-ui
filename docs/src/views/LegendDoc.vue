@@ -5,8 +5,8 @@
     <section id="overview">
       <h2>概述</h2>
       <p>
-        图例条组件是一个用于显示颜色图例和数值标签的可视化组件，支持自定义颜色数量、颜色配置、数值标签等，
-        适用于气象数据可视化、数据图表图例展示等场景。
+        图例条组件是一个用于显示颜色图例和数值标签的可视化组件，支持灵活的区间配置、自定义颜色和数值范围，
+        适用于气象数据可视化、数据图表图例展示等场景。组件支持两种配置方式：新的区间配置方式和传统的数量配置方式。
       </p>
     </section>
 
@@ -32,8 +32,45 @@ import { LegendBar } from 'anshun-meteo-ui'
 &lt;/script&gt;</code></pre>
     </section>
 
+    <section id="ranges-usage">
+      <h2>区间配置方式（推荐）</h2>
+      <h3>自定义颜色和数值区间</h3>
+      <div class="demo-container">
+        <LegendBar :ranges="temperatureRanges" />
+      </div>
+      <p>使用区间配置可以精确控制每个颜色段对应的数值范围</p>
+
+      <pre class="code-block"><code>&lt;template&gt;
+  &lt;LegendBar :ranges="temperatureRanges" /&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+const temperatureRanges = [
+  { min: -10, max: 0, color: '#0066cc' },
+  { min: 0, max: 10, color: '#00ccff' },
+  { min: 10, max: 20, color: '#66ff66' },
+  { min: 20, max: 30, color: '#ffff00' },
+  { min: 30, max: 40, color: '#ff6600' }
+]
+&lt;/script&gt;</code></pre>
+
+      <h3>降水量图例</h3>
+      <div class="demo-container">
+        <LegendBar :ranges="precipitationRanges" />
+      </div>
+
+      <pre class="code-block"><code>const precipitationRanges = [
+  { min: 0, max: 0.1, color: 'white', label: '无降水' },
+  { min: 0.1, max: 10, color: '#90EE90', label: '小雨' },
+  { min: 10, max: 25, color: '#32CD32', label: '中雨' },
+  { min: 25, max: 50, color: '#FFD700', label: '大雨' },
+  { min: 50, max: 100, color: '#FF4500', label: '暴雨' }
+]</code></pre>
+    </section>
+
     <section id="custom-count">
-      <h2>自定义数量</h2>
+      <h2>传统配置方式（向后兼容）</h2>
+      <h3>自定义数量</h3>
       <div class="demo-container">
         <LegendBar :count="5" />
       </div>
@@ -81,6 +118,41 @@ import { LegendBar } from 'anshun-meteo-ui'
       </p>
     </section>
 
+    <section id="style-config">
+      <h2>样式配置</h2>
+      <h3>自定义宽度和高度</h3>
+      <div class="demo-container">
+        <LegendBar
+          :ranges="temperatureRanges"
+          :width="400"
+          :height="15"
+          :min-width="300"
+        />
+      </div>
+
+      <pre class="code-block"><code>&lt;LegendBar
+  :ranges="temperatureRanges"
+  :width="400"
+  :height="15"
+  :min-width="300"
+/&gt;</code></pre>
+
+      <h3>隐藏边框和标签</h3>
+      <div class="demo-container">
+        <LegendBar
+          :ranges="temperatureRanges"
+          :show-border="false"
+          :show-labels="false"
+        />
+      </div>
+
+      <pre class="code-block"><code>&lt;LegendBar
+  :ranges="temperatureRanges"
+  :show-border="false"
+  :show-labels="false"
+/&gt;</code></pre>
+    </section>
+
     <section id="api">
       <h2>API</h2>
 
@@ -91,8 +163,22 @@ import { LegendBar } from 'anshun-meteo-ui'
         :pagination="false"
       />
 
-      <h3>颜色配置</h3>
-      <p>组件内置了10种预设颜色，按顺序显示：</p>
+      <h3>LegendRange 类型</h3>
+      <a-table
+        :columns="rangeColumns"
+        :data-source="rangeData"
+        :pagination="false"
+      />
+
+      <h3>事件</h3>
+      <a-table
+        :columns="eventColumns"
+        :data-source="eventData"
+        :pagination="false"
+      />
+
+      <h3>默认颜色配置</h3>
+      <p>传统配置方式使用的内置颜色：</p>
       <div class="color-list">
         <div
           v-for="(color, index) in defaultColors"
@@ -104,8 +190,8 @@ import { LegendBar } from 'anshun-meteo-ui'
         </div>
       </div>
 
-      <h3>数值配置</h3>
-      <p>组件内置了对应的数值标签：</p>
+      <h3>默认数值配置</h3>
+      <p>传统配置方式使用的内置数值：</p>
       <div class="value-list">
         <span
           v-for="(value, index) in defaultValues"
@@ -126,6 +212,24 @@ import { LegendBar } from 'anshun-meteo-ui'
 // 演示数据
 const customCount = ref(5)
 
+// 温度区间配置
+const temperatureRanges = ref([
+  { min: -10, max: 0, color: '#0066cc' },
+  { min: 0, max: 10, color: '#00ccff' },
+  { min: 10, max: 20, color: '#66ff66' },
+  { min: 20, max: 30, color: '#ffff00' },
+  { min: 30, max: 40, color: '#ff6600' }
+])
+
+// 降水量区间配置
+const precipitationRanges = ref([
+  { min: 0, max: 0.1, color: 'white', label: '无降水' },
+  { min: 0.1, max: 10, color: '#90EE90', label: '小雨' },
+  { min: 10, max: 25, color: '#32CD32', label: '中雨' },
+  { min: 25, max: 50, color: '#FFD700', label: '大雨' },
+  { min: 50, max: 100, color: '#FF4500', label: '暴雨' }
+])
+
 // API表格数据
 const propsColumns = [
   { title: '属性', dataIndex: 'prop', key: 'prop' },
@@ -136,10 +240,130 @@ const propsColumns = [
 
 const propsData = [
   {
+    prop: 'ranges',
+    description: '区间配置数组，优先级最高',
+    type: 'LegendRange[]',
+    default: '-',
+  },
+  {
     prop: 'count',
-    description: '图例条数量，会自动限制在1-10之间',
+    description: '图例条数量，会自动限制在1-10之间（传统方式）',
     type: 'number',
     default: '3',
+  },
+  {
+    prop: 'colors',
+    description: '自定义颜色数组（传统方式）',
+    type: 'string[]',
+    default: '-',
+  },
+  {
+    prop: 'values',
+    description: '自定义数值数组（传统方式）',
+    type: 'number[]',
+    default: '-',
+  },
+  {
+    prop: 'width',
+    description: '图例条宽度',
+    type: 'number | string',
+    default: '259',
+  },
+  {
+    prop: 'height',
+    description: '图例条高度',
+    type: 'number | string',
+    default: '9',
+  },
+  {
+    prop: 'minWidth',
+    description: '最小宽度',
+    type: 'number',
+    default: '200',
+  },
+  {
+    prop: 'showBorder',
+    description: '是否显示边框',
+    type: 'boolean',
+    default: 'true',
+  },
+  {
+    prop: 'borderColor',
+    description: '边框颜色',
+    type: 'string',
+    default: '#000',
+  },
+  {
+    prop: 'showLabels',
+    description: '是否显示数值标签',
+    type: 'boolean',
+    default: 'true',
+  },
+  {
+    prop: 'labelFormatter',
+    description: '数值标签格式化函数',
+    type: '(value: number) => string',
+    default: '-',
+  },
+]
+
+// LegendRange 类型表格
+const rangeColumns = [
+  { title: '属性', dataIndex: 'prop', key: 'prop' },
+  { title: '说明', dataIndex: 'description', key: 'description' },
+  { title: '类型', dataIndex: 'type', key: 'type' },
+  { title: '必填', dataIndex: 'required', key: 'required' },
+]
+
+const rangeData = [
+  {
+    prop: 'min',
+    description: '区间最小值',
+    type: 'number',
+    required: '是',
+  },
+  {
+    prop: 'max',
+    description: '区间最大值',
+    type: 'number',
+    required: '是',
+  },
+  {
+    prop: 'color',
+    description: '区间颜色',
+    type: 'string',
+    required: '是',
+  },
+  {
+    prop: 'label',
+    description: '可选的自定义标签',
+    type: 'string',
+    required: '否',
+  },
+]
+
+// 事件表格
+const eventColumns = [
+  { title: '事件名', dataIndex: 'event', key: 'event' },
+  { title: '说明', dataIndex: 'description', key: 'description' },
+  { title: '回调参数', dataIndex: 'params', key: 'params' },
+]
+
+const eventData = [
+  {
+    event: 'item-click',
+    description: '点击图例项时触发',
+    params: 'item: LegendBarItem, index: number',
+  },
+  {
+    event: 'item-hover',
+    description: '鼠标悬停图例项时触发',
+    params: 'item: LegendBarItem, index: number',
+  },
+  {
+    event: 'item-leave',
+    description: '鼠标离开图例项时触发',
+    params: 'item: LegendBarItem, index: number',
   },
 ]
 
